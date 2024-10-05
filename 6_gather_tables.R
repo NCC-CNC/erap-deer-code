@@ -23,13 +23,7 @@ protected <- read_csv("processing/protected_intact_modified/protected_intact_mod
 habitat <- read_csv("processing/habitat/final_habitat_table.csv")
 
 threats <- read_csv("processing/threats/direct_threats.csv") %>%
-  select(ECOREGION,
-         forestry_km2,
-         agriculture_km2,
-         transport_high_km2,
-         transport_low_km2,
-         energy_km2,
-         builtup_km2)
+  round(2)
 
 wtw <- read_csv("processing/prioritizr/ecozones/Canada_wtw_2024_ecoregion_proportions.csv") %>%
   select(ECOREGION,
