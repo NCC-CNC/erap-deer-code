@@ -17,18 +17,18 @@ ecoregions <- st_read("C:/Users/marc.edwards/Documents/gisdata/national_ecologic
 shortfall_df <- tibble(ECOREGION = as.numeric(), CH_99 = as.numeric(), CH_50_99 = as.numeric(), SAR_99 = as.numeric(), SAR_50_99 = as.numeric())
 for(f in list.files("output/species_tables/", full.names = TRUE)){
   df <- read_excel(f, sheet = 1)
-
+  
   shortfall_df <- rbind(shortfall_df,
-                       tibble(ECOREGION = as.numeric(str_replace(strsplit(f, "_ecoregion_")[[1]][2], ".xlsx", "")),
-                              CH_99 = ifelse(is.null(df$ECCC_CH[4]), 0, df$ECCC_CH[4]),
-                              CH_50_99 = ifelse(is.null(df$ECCC_CH[5]), 0, df$ECCC_CH[5]),
-                              SAR_99 = ifelse(is.null(df$ECCC_SAR[4]), 0, df$ECCC_SAR[4]),
-                              SAR_50_99 = ifelse(is.null(df$ECCC_SAR[5]), 0, df$ECCC_SAR[5])
-                       ))
+                        tibble(ECOREGION = as.numeric(str_replace(strsplit(f, "_ecoregion_")[[1]][2], ".xlsx", "")),
+                               CH_99 = ifelse(is.null(df$ECCC_CH[4]), 0, df$ECCC_CH[4]),
+                               CH_50_99 = ifelse(is.null(df$ECCC_CH[5]), 0, df$ECCC_CH[5]),
+                               SAR_99 = ifelse(is.null(df$ECCC_SAR[4]), 0, df$ECCC_SAR[4]),
+                               SAR_50_99 = ifelse(is.null(df$ECCC_SAR[5]), 0, df$ECCC_SAR[5])
+                        ))
 }
 
 # Load actions table
-actions <- read_excel("Action_recommendation_reference.xlsx")
+actions <- read_excel("ERAP Action recommendation reference - Oct24 2024.xlsx")
 
 # load tables
 protected <- read_csv("processing/protected_intact_modified/protected_intact_modified.csv")
@@ -70,8 +70,8 @@ rest1 <- function(x){
   return(x < 30)
 }
 rest2 <- function(x){
-  # Trigger: Unprotected intact land < Unprotected modified land. aka Unprotected intact land <50%
-  return(x < 50)
+  # Trigger: Unprotected modified land >=30%
+  return(x >= 30)
 }
 partner1 <- function(x){
   # Trigger: Area of NCC fee-simple land > 0km2
@@ -108,11 +108,11 @@ for(eco in ecoregions$ECOREGION){
   eco_fs_ca <- sum(as.numeric(st_area(eco_fs_ca_sf)))/1000000
   
   protected_intact_pcnt <- (protected$protected_inland_km2[protected$ECOREGION == eco] + # terrestrial protection... plus ....
-                              ((protected$inland_km2[protected$ECOREGION == eco] - protected$protected_inland_km2[protected$ECOREGION == eco]) # terrestrial unprotected...
+                              ((protected$ecoregion_inland_km2[protected$ECOREGION == eco] - protected$protected_inland_km2[protected$ECOREGION == eco]) # terrestrial unprotected...
                                * (protected$unprotected_intact_pcnt[protected$ECOREGION == eco]/100)) # ... multiplied by % of unprotected land that is intact....to get estimate of intact unprotected areas
-                            ) / protected$inland_km2[protected$ECOREGION == eco] * 100 # all divided by the total terrestrial area to get % that could potentially be protected and intact
+  ) / protected$ecoregion_inland_km2[protected$ECOREGION == eco] * 100 # all divided by the total terrestrial area to get % that could potentially be protected and intact
   
-  unprotected_intact <- protected$unprotected_intact_pcnt[protected$ECOREGION == eco]
+  unprotected_modified <- protected$unprotected_modified_pcnt[protected$ECOREGION == eco]
   
   eco_fs <- sum(as.numeric(st_area(eco_fs_sf)))/1000000
   
@@ -164,10 +164,10 @@ for(eco in ecoregions$ECOREGION){
                                              ECOREGION_value = protected_intact_pcnt))
   }
   # rest 2
-  if(rest2(unprotected_intact)){
+  if(rest2(unprotected_modified)){
     eco_actions <- rbind(eco_actions, tibble(ECOREGION = eco,
                                              ID = "REST2",
-                                             ECOREGION_value = unprotected_intact))
+                                             ECOREGION_value = unprotected_modified))
   }
   # partner 1
   if(partner1(eco_fs)){
@@ -189,16 +189,20 @@ for(eco in ecoregions$ECOREGION){
 
 actions_out <- left_join(actions_out, actions, by = "ID")  %>% rename("ECOREGION value" = "ECOREGION_value")
 actions_out <- actions_out[c("ECOREGION",
-                           "ID",
-                           "Action CMP 2.0",
-                           "Description",
-                           "Indicator",
-                           "Trigger condition",
-                           "ECOREGION value"
-                           )]
+                             "ID",
+                             "Action CMP 2.0",
+                             "Description",
+                             "Indicator",
+                             "Trigger condition",
+                             "ECOREGION value"
+)]
 
 actions_out$`ECOREGION value` <- round(actions_out$`ECOREGION value`, 2)
+
 write_csv(actions_out, "output/action_recommendations.csv")
+
+
+
 
 # Make a wide version that can be joined to the ecoregions
 actions_wide <- actions_out %>%
@@ -214,17 +218,17 @@ actions_wide$ABC_count <- apply(actions_wide[c("ABC1","ABC2","ABC3","ABC4","ABC5
 actions_wide$Restoration_count <- apply(actions_wide[c("REST1","REST2")], 1, function(x){length(which(x=="Yes"))})
 
 actions_wide <- actions_wide[c("ECOREGION",
-                             "ABC1",
-                             "ABC2",
-                             "ABC3",
-                             "ABC4",
-                             "ABC5",
-                             "STEW1",
-                             "REST1",
-                             "REST2",
-                             "PARTNER1",
-                             "ABC_count",
-                             "Restoration_count"
+                               "ABC1",
+                               "ABC2",
+                               "ABC3",
+                               "ABC4",
+                               "ABC5",
+                               "STEW1",
+                               "REST1",
+                               "REST2",
+                               "PARTNER1",
+                               "ABC_count",
+                               "Restoration_count"
 )]
 
 write_csv(actions_wide, "processing/action_recommendations/action_recommendations_wide.csv")
