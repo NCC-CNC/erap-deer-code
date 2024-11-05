@@ -7,6 +7,9 @@ library(tidyverse)
 library(sf)
 library(openxlsx)
 
+remotes::install_github("R-ArcGIS/r-bridge")
+library(arcgisbinding)
+
 ### 1. PREP ATTRIBUTE TABLE ###
 
 # load tables
@@ -32,7 +35,7 @@ wtw <- read_csv("processing/prioritizr/ecozones/Canada_wtw_2024_ecoregion_propor
          wtw_percent,
          wtw_inland_percent)
 
-actions <- read_csv("processing/action_recommendations/action_recommendations_wide.csv")
+actions <- read_csv("processing/action_recommendations/action_recommendations_wide.csv", col_types = cols(ABC_count = "i", Restoration_count = "i"))
 
 df <- protected %>%
   left_join(habitat, by = "ECOREGION") %>%
@@ -73,6 +76,8 @@ shp <- st_read("C:/Users/marc.edwards/Documents/gisdata/national_ecological_fram
          REGION_NOM,
          ECOZONE,
          ZONE_NAME,
-         ZONE_NOM)
+         ZONE_NOM) %>%
+  left_join(df, by = "ECOREGION")
 
-st_write(shp, "ERAP_ecoregions.shp")
+#st_write(shp, "output/ERAP_ecoregions.shp", append = FALSE)
+arc.write("output/ERAP_ecoregions.gdb/ERAP_ecoregions", shp)
