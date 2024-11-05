@@ -96,4 +96,14 @@ habitat_tib <-
 habitat_tib[is.na(habitat_tib)] <- 0
 habitat_tib$land_km2 <- NULL # remove land km2 column
 
+# set % values for protected and WTW to zero if ecoregion % rounds to zero
+habitat_tib$pcnt_forest_protected[habitat_tib$pcnt_ecoregion_forest_cover == 0] <- 0
+habitat_tib$pcnt_forest_wtw[habitat_tib$pcnt_ecoregion_forest_cover == 0] <- 0
+habitat_tib$pcnt_grassland_protected[habitat_tib$pcnt_ecoregion_grassland_cover == 0] <- 0
+habitat_tib$pcnt_grassland_wtw[habitat_tib$pcnt_ecoregion_grassland_cover == 0] <- 0
+habitat_tib$pcnt_wetland_protected[habitat_tib$pcnt_ecoregion_wetland_cover == 0] <- 0
+habitat_tib$pcnt_wetland_wtw[habitat_tib$pcnt_ecoregion_wetland_cover == 0] <- 0
+habitat_tib$pcnt_lakes_protected[habitat_tib$pcnt_ecoregion_lakes_cover == 0] <- 0
+habitat_tib$pcnt_lakes_wtw[habitat_tib$pcnt_ecoregion_lakes_cover == 0] <- 0
+
 write_csv(habitat_tib, "processing/habitat/final_habitat_table.csv")
