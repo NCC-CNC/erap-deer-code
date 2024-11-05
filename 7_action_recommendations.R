@@ -28,7 +28,7 @@ for(f in list.files("output/species_tables/", full.names = TRUE)){
 }
 
 # Load actions table
-actions <- read_excel("ERAP Action recommendation reference - Oct24 2024.xlsx")
+actions <- read_excel("C:/Users/marc.edwards/Documents/Github/erap_code/tables/ERAP Action recommendation reference.xlsx")
 
 # load tables
 protected <- read_csv("processing/protected_intact_modified/protected_intact_modified.csv")
