@@ -47,8 +47,8 @@ km2_conversion <- prod(res(intact)/1000)
 # Prep output table
 tib <- ecoregions %>%
   st_drop_geometry() %>%
-  select("ECOREGION", "ECOZONE") %>%
   sort(c("ECOZONE", "ECOREGION")) %>%
+  select("ECOREGION") %>%
   distinct() %>%
   mutate(ecoregion_km2 = NA,
          ecoregion_inland_km2 = NA,
