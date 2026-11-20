@@ -96,7 +96,7 @@ actions <- function(cfg, landscapes, protected_intactness_tab, wtw_tab, species_
   out$ABC1     <- out$protected_pcnt < 30
   out$ABC2     <- out$SAR_99 > 0
   out$ABC3     <- out$SAR_50_99 >= 5
-  out$ABC4     <- out$wtw_percent > 20
+  out$ABC4     <- out$wtw_percent > 15
   out$ABC5     <- out$wtw_area_km2 > 10000
   out$STEW1    <- out$ncc_fs_ca_km2 > 0
   out$REST1    <- out$protected_intact_pcnt < 30

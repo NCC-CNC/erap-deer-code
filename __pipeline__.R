@@ -7,8 +7,8 @@
 
 start_time <- Sys.time()
 
-toml_path <- "setup_ecoregions.toml"
-# toml_path <- "setup_priority_landscapes.toml"
+# toml_path <- "setup_ecoregions.toml"
+toml_path <- "setup_priority_landscapes.toml"
 
 source("R/01_setup.R")
 print("01 setup...")

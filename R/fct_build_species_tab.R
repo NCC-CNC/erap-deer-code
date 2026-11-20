@@ -58,31 +58,31 @@ extract_species_km2_bulk <- function(r_stack, boundary_sf, id_col, chunk_size = 
 }
 
 # Loads Canada-wide species metadata from an Excel workbook (one sheet per
-# source) -- same shape as conservation-profiles' load_species_meta(), with
-# one addition: prefers Protected_Km2_vector over Protected_Km2 per row
-# when present (species_metadata_path here is data_prep/"6
-# filter_species_metadata.R"'s project-specific, already-filtered copy,
-# further updated in place by "7 recalc_species_protected_km2.R" -- not the
-# true original WTW_NAT_SPECIES_METADATA.xlsx).
+# source) -- same shape as conservation-profiles' load_species_meta(), but
+# "Canada range" means each species' terrestrial range only, matching every
+# other geometry this pipeline scores against (terrestrial_sf): reads the
+# Total_Km2_terrestrial/Protected_Km2_terrestrial/Pct_Protected_terrestrial/
+# Goal_terrestrial columns, not the original (marine-inclusive) Total_Km2/
+# Protected_Km2/Pct_Protected/Goal. species_metadata_path here is
+# data_prep/"6 filter_species_metadata.R"'s project-specific, already-
+# filtered copy, further updated in place by "7
+# recalc_species_protected_km2.R" (which also drops any species with zero
+# terrestrial range) -- not the true original WTW_NAT_SPECIES_METADATA.xlsx.
 load_species_meta <- function(species_metadata_path) {
   sheets <- readxl::excel_sheets(species_metadata_path)
   meta <- do.call(rbind, lapply(sheets, function(sheet) {
     readxl::read_excel(species_metadata_path, sheet) |>
-      dplyr::select(dplyr::any_of(c(
+      dplyr::select(
         "Source", "File", "Theme", "Sci_Name", "Common_Name", "Threat",
-        "Total_Km2", "Protected_Km2", "Protected_Km2_vector", "Pct_Protected", "Goal"
-      )))
+        "Total_Km2_terrestrial", "Protected_Km2_terrestrial",
+        "Pct_Protected_terrestrial", "Goal_terrestrial"
+      )
   }))
 
-  if ("Protected_Km2_vector" %in% names(meta)) {
-    meta$Protected_Km2 <- ifelse(!is.na(meta$Protected_Km2_vector), meta$Protected_Km2_vector, meta$Protected_Km2)
-    meta$Protected_Km2_vector <- NULL
-  }
-
-  names(meta)[names(meta) == "Total_Km2"]     <- "Canada_Total_km2"
-  names(meta)[names(meta) == "Protected_Km2"] <- "Canada_Protected_km2"
-  names(meta)[names(meta) == "Pct_Protected"] <- "Canada_Pct_Protected"
-  names(meta)[names(meta) == "Goal"]          <- "Canada_Pct_Goal"
+  names(meta)[names(meta) == "Total_Km2_terrestrial"]     <- "Canada_Total_km2"
+  names(meta)[names(meta) == "Protected_Km2_terrestrial"] <- "Canada_Protected_km2"
+  names(meta)[names(meta) == "Pct_Protected_terrestrial"] <- "Canada_Pct_Protected"
+  names(meta)[names(meta) == "Goal_terrestrial"]          <- "Canada_Pct_Goal"
 
   meta$Canada_Pct_Goal           <- meta$Canada_Pct_Goal * 100
   meta$Canada_km2_Goal           <- meta$Canada_Total_km2 * (meta$Canada_Pct_Goal / 100)
