@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>changelog</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="CHANGELOG_files/libs/clipboard/clipboard.min.js"></script>
+<script src="CHANGELOG_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="CHANGELOG_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="CHANGELOG_files/libs/quarto-html/popper.min.js"></script>
+<script src="CHANGELOG_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="CHANGELOG_files/libs/quarto-html/anchor.min.js"></script>
+<link href="CHANGELOG_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="CHANGELOG_files/libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="CHANGELOG_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="CHANGELOG_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="CHANGELOG_files/libs/bootstrap/bootstrap-215b371544c282197b31c8aa00ce3677.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+
+
+
+<section id="changelog" class="level1">
+<h1>Changelog</h1>
+<section id="v0.2-release---2026-11-20" class="level2">
+<h2 class="anchored" data-anchor-id="v0.2-release---2026-11-20">v0.2 release - 2026-11-20</h2>
+<section id="structural-code-changes" class="level3">
+<h3 class="anchored" data-anchor-id="structural-code-changes">Structural code changes</h3>
+<ul>
+<li>Rebuilt from 19 loosely-coupled scripts with hardcoded absolute paths into a toml-config-driven pipeline: <code>setup.toml</code> for all paths, numbered step scripts (<code>01_setup.R</code> .. <code>09_gather_and_write.R</code>) + <code>fct_</code> helpers, one entry point (<code>__pipeline__.R</code>), matching the <code>conservation-profiles</code> pattern.</li>
+<li>Pipeline now runs over two landscape sets – ecoregions and Priority Landscapes – via two <code>setup.toml</code> files (<code>setup_ecoregions.toml</code> / <code>setup_priority_landscapes.toml</code>), producing two outputs with an identical schema. Code uses generic “landscape” terminology throughout, not “ecoregion”/“boundary”.</li>
+<li>New <code>landscape_id</code> column is the universal per-run join key across every step’s checkpoint CSV, replacing <code>ECOREGION_ID</code> as the internal join key.</li>
+<li>Reused already-verified functions from <code>conservation-profiles</code> instead of re-writing them: <code>fct_read_feature.R</code>, <code>fct_read_raster.R</code> (copied verbatim); <code>build_species_stack()</code> (copied verbatim), <code>load_species_meta()</code>/<code>summarise_species_tab()</code> (adapted – see “Output table &amp; calculation changes” below). <code>fct_intersect_vector_value.py</code>’s <code>intersect_vector_value()</code> was rewritten as a bulk-pass function (<code>intersect_vector_values()</code>, one dissolve-by- <code>landscape_id</code> pass instead of one call per landscape), plus a new <code>intersect_vector_geoms()</code> for callers that need the clipped geometry itself (not just a summed area) to then extract a raster against it. A parallel bulk raster helper, <code>intersect_raster_values()</code> (<code>R/fct_intersect_raster_value.R</code>), does the same for rasters – one <code>exact_extract()</code> call across every landscape at once. Porting these back into <code>conservation-profiles</code> is tracked in <code>CONSERVATION_PROFILES_CHANGES.md</code>.</li>
+<li>Species raster prep (<code>5a</code>) referenced only via <code>setup.toml</code> as a pre-generated input, same as before. The prioritizr optimization chain is kept in-repo under <code>data_prep/8 prioritizr/</code>, its outputs feeding <code>ERAPs_v2</code> for <code>setup.toml</code> to reference, same pattern as every other <code>data_prep/</code> script.</li>
+<li>New <code>data_prep/</code> folder for one-time GIS prep scripts that run <em>before</em> the pipeline, building reference layers the pipeline itself just reads: ecoregions (CTEF v2.2), Priority Landscapes x ecoregions overlap attribution, CPCAD+NCC 2025 (unclipped and terrestrial-clipped), species tif extraction + metadata filtering + protected-area recalculation, the WTW erase, habitat source gathering, and Indigenous Territories x ecoregions/Priority Landscapes intersection. Their generated GIS outputs all live outside the repo (<code>C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2</code>), not inside this repo’s own <code>data_prep/</code> folder.</li>
+<li>Every numbered step reads its own <code>setup.toml</code> inputs + the step-02 landscape table, writes one checkpoint CSV to <code>processing_dir</code>, and can be re-run independently (by sourcing just that step) if a later step fails.</li>
+<li>Deferred/dropped from this pass: <code>5b</code>/<code>5d</code> species QA checks (deferred, not ported); <code>8_clip_data_for_pdf_maps.py</code> (out of scope); <code>fct_calculate_targets.R</code>/<code>fct_init_metadata.R</code>/<code>fct_sci_to_common.R</code> (not ported into the new pipeline – <code>fct_calculate_targets.R</code> is still used directly by <code>data_prep</code> scripts, the other two are unused anywhere in the repo).</li>
+<li><code>6_action_recommendations.R</code> ported as <code>R/08_actions.R</code>, generic over <code>landscape_id</code> (both landscape sets) instead of one hardcoded, ecozone-filtered ecoregion shapefile looped one row at a time. Two new checkpoint CSVs per run (<code>actions_table.csv</code> long, <code>actions_summary.csv</code> wide), same shape as the legacy script’s two outputs. <code>actions_summary.csv</code> (wide, one row per landscape) is joined into <code>09_gather_and_write.R</code>’s table, matching the legacy <code>7_gather_tables.R</code>’s own join of <code>action_recommendations_wide.csv</code>; <code>actions_table.csv</code> (long, one row per landscape per triggered action) is not, for the same one-row-per-landscape reason species isn’t. Three triggers had to be reconstructed rather than reused verbatim, since their legacy inputs no longer exist:
+<ul>
+<li><code>ABC2</code>/<code>ABC3</code> originally counted SAR <em>and</em> Critical Habitat species together; CH is no longer tracked anywhere in this pipeline’s species data (only the <code>SAR (NCC AOH)</code> theme survived the Theme rename), so these two count SAR alone now.</li>
+<li><code>REST2</code>’s old input (% of unprotected land that’s modified) was retired by <code>#29</code>; recomputed explicitly from <code>modified_km2</code>/<code>protected_modified_km2</code>/<code>landscape_km2</code>/<code>protected_km2</code> to keep its own definition and 30% threshold unchanged, rather than substituting one of <code>#29</code>’s new full-landscape percentages (different denominator).</li>
+<li><code>STEW1</code>/<code>PARTNER1</code> need NCC’s fee-simple(+CA) properties as their own layer – <code>data_prep/"3 prep_cpcad_ncc_2025.py"</code> now persists <code>ncc_fs_ca_2025_dslv</code> (fee simple + conservation agreement) and <code>ncc_fs_2025_dslv</code> (fee simple only) instead of dissolving them away into the merged CPCAD+NCC layer (<code>setup.toml</code>’s new <code>ncc_fs_ca_path</code>/ <code>ncc_fs_path</code>).</li>
+<li><code>ABC1</code>, <code>ABC4</code>, <code>ABC5</code> ported onto existing columns (<code>protected_pcnt</code>, <code>wtw_percent</code>, <code>wtw_area_km2</code>) unchanged – <code>wtw_percent</code>’s own <em>definition</em> already changed under <code>#18</code> before this port, so ABC4/ ABC5’s 20%/10,000km² thresholds now fire against the erased-protected WTW layer, not the legacy un-erased one (confirmed expected via the v1 comparison below, not a bug).</li>
+<li><code>REST1</code>‘s legacy input (a combined protected + unprotected-intact coverage estimate, not a plain column) doesn’t exist anywhere in this pipeline’s tables – an earlier pass wired it to <code>protected_intact_pcnt</code> directly, which is a <em>different</em> quantity under <code>#29</code> (the protected/intact overlap, not the combined estimate) and fired almost everywhere it shouldn’t have. Fixed: <code>REST1</code>/<code>REST2</code> both recompute the legacy formulas explicitly from <code>intact_km2</code>/<code>modified_km2</code>/ <code>protected_intact_km2</code>/<code>protected_modified_km2</code>/<code>landscape_km2</code>/ <code>protected_km2</code>, including the legacy script’s own denominator restriction (the pressure-raster-classified subset of unprotected land, not the full unprotected land area) – keeping both triggers’ definitions and 30% thresholds unchanged from the legacy script.</li>
+<li>Validated the full action-recommendations port against the final v1 output (<code>action_recommendations_wide.csv</code>, not the earlier, stale archived <code>ERAP_attributes.csv</code> snapshot, which predates it by 10 days): <code>ABC1</code>, <code>STEW1</code>, <code>REST1</code>, <code>REST2</code>, <code>PARTNER1</code>, and <code>Restoration_count</code> match exactly (0/149 ecoregions mismatched); <code>ABC2</code>/<code>ABC3</code>/<code>ABC4</code>/ <code>ABC5</code>/<code>ABC_count</code> mismatch only where already expected from the SAR-only and <code>#18</code> WTW-redefinition changes above.</li>
+<li>New reference table <code>tables/ERAP Action recommendation reference.xlsx</code> (action ID -&gt; CMP 2.0 action, description, indicator, trigger condition), checked into this repo (<code>setup.toml</code>’s new <code>[actions].actions_reference_path</code>) rather than left in the old <code>erap_code</code> repo it used to live in.</li>
+</ul></li>
+</ul>
+</section>
+<section id="output-table-calculation-changes" class="level3">
+<h3 class="anchored" data-anchor-id="output-table-calculation-changes">Output table &amp; calculation changes</h3>
+<ul>
+<li><code>wtw_percent</code> redefined as % of the whole landscape (<code>wtw_area_km2 / landscape_km2 * 100</code>), not % of the unprotected remainder – and <code>wtw_area_km2</code> itself now comes from intersecting <code>wtw_erased_protected</code> (WTW solution, CPCAD+NCC erased – <code>erap-deer-code#18</code>) against each landscape, replacing raster zonal stats against the un-erased solution. No <code>includes_km2</code> column – retracted once #18 removed the need for it.</li>
+<li><strong><code>erap-deer-code#29</code></strong>: <code>unprotected_intact_pcnt</code>/<code>unprotected_modified_pcnt</code> (computed against the unprotected remainder only) are replaced with four full-landscape figures – <code>intact_pcnt</code>, <code>modified_pcnt</code>, <code>protected_intact_pcnt</code>, <code>protected_modified_pcnt</code> – all four sharing one denominator, <code>intact_km2 + modified_km2</code> (not <code>landscape_km2</code>, since the pressure raster pair won’t always fully cover the landscape polygon exactly – this denominator choice guarantees the two top-level percentages sum to 100 regardless). New raw-area columns <code>intact_km2</code>, <code>modified_km2</code>, <code>protected_intact_km2</code>, <code>protected_modified_km2</code> also land in the output table.</li>
+<li>Collapsed the <code>ecoregion</code> vs.&nbsp;<code>ecoregion_inland</code> duplication to a single reference landscape polygon per loop (the land-clipped one, not the full extent) – dropped the full-extent-only columns: <code>ecoregion_km2</code>, <code>protected_km2</code> (full), <code>protected_pcnt</code> (full), <code>wtw_area_km2</code> (full), <code>wtw_percent</code> (full).</li>
+<li>Column renames from the single-polygon collapse + generic landscape terminology: <code>ecoregion_inland_km2</code> -&gt; <code>landscape_km2</code>; <code>protected_inland_km2</code>/<code>_pcnt</code> -&gt; <code>protected_km2</code>/<code>_pcnt</code>; <code>wtw_area_inland_km2</code> -&gt; <code>wtw_area_km2</code>; <code>wtw_inland_percent</code> -&gt; <code>wtw_percent</code>; <code>pcnt_ecoregion_forest/grassland/wetland/lakes_cover</code> -&gt; <code>pcnt_landscape_..._cover</code>.</li>
+<li>Habitat type renamed: <code>shoreline</code> -&gt; <code>coastline</code> (<code>habitat_shoreline</code> -&gt; <code>habitat_coastline</code>, <code>shoreline_km</code> -&gt; <code>coastline_km</code>, etc.) – the underlying dataset changed from <code>shoreline_merge</code> to CanCoast, so the name changed to match.</li>
+<li>Forest/grassland/wetland habitat sums now intersect the same land-clipped (terrestrial) landscape polygon lakes/rivers already used (previously intersected the full extent) – expect small differences right at coastlines vs.&nbsp;the historical values.</li>
+<li>Coastline is the one habitat type that does NOT use the terrestrial landscape polygon: every landscape now has a second, marine-buffered polygon (extending into the marine area), and coastline cover (<code>coastline_km</code>) plus coastline’s own protected/WTW overlap (<code>coastline_protected_km</code>/<code>coastline_wtw_km</code>) all intersect against that marine polygon instead – fixing the same undercount issue #24 originally found (clipped terrestrial boundaries lose real coastline length CanCoast would otherwise credit) plus capturing protected/WTW area that extends past the terrestrial land base into the water. Applies to coastline only – no other habitat type, pressure, or landscape-level metric uses the marine polygon.</li>
+<li>Dropped the second rivers dataset (<code>rivers_1M_*</code>) – only one rivers dataset (matching <code>conservation-profiles</code>’ <code>habitat_rivers</code>) is carried forward.</li>
+<li>New habitat type: <code>peatlands</code> (vector, <code>habitat_peatlands</code>) – same non-linear cover-type pattern as forest/grassland/wetland/lakes (<code>peatlands_km2</code>/<code>pcnt_landscape_peatlands_cover</code>, its own <code>pcnt_peatlands_protected</code>/<code>pcnt_peatlands_wtw</code>, zeroed out when cover rounds to zero same as the other four). Not in the original erap-deer-code scope – added 2026-10-20.</li>
+<li>Species: <code>Canada_Protected_km2</code> (and the <code>Canada_Protection_Gap_km2</code> it drives) now prefers <code>Protected_Km2_vector</code>/CPCAD-vector-recalculated protected area over the original 1km-grid-based <code>Protected_Km2</code>, per row, where available (<code>data_prep/"7 recalc_species_protected_km2.R"</code>) – the grid-based original has a binary-threshold overcount bug – any 1km grid cell with any nonzero protection credits the species its entire area in that cell, no partial weighting – which overcounts protection most for species with small, concentrated ranges.</li>
+<li>Dropped <code>protection_goal</code> and <code>wtw_eco_pcnt</code> from scope (grep-confirmed neither ever existed in the live code).</li>
+<li>Action-recommendation columns (<code>ABC1-5</code>, <code>STEW1</code>, <code>REST1-2</code>, <code>PARTNER1</code>, <code>ABC_count</code>, <code>Restoration_count</code>) are in the main attributes table via <code>R/08_actions.R</code>’s <code>actions_summary.csv</code> checkpoint (see “Structural code changes” above), matching the legacy script’s own join.</li>
+<li>New <code>landscape_id</code> column, always populated in both runs.</li>
+<li>Ecoregions/ecozones data source switched to the Canadian Terrestrial Ecological Framework (CTEF) v2.2, replacing the old source shapefile – whose French ecoregion names (<code>REGION_NOM</code>) turned out to be corrupted at the raw-byte level and unrecoverable. Along with the switch, the six identity columns are renamed repo-wide: <code>ECOREGION</code> -&gt; <code>ECOREGION_ID</code>, <code>REGION_NAM</code> -&gt; <code>ECOREGION_NAME_EN</code>, <code>REGION_NOM</code> -&gt; <code>ECOREGION_NAME_FR</code>, <code>ECOZONE</code> -&gt; <code>ECOZONE_ID</code>, <code>ZONE_NAME</code> -&gt; <code>ECOZONE_NAME_EN</code>, <code>ZONE_NOM</code> -&gt; <code>ECOZONE_NAME_FR</code>.</li>
+<li><code>ECOREGION_ID</code>/<code>ECOREGION_NAME_EN</code>/<code>ECOREGION_NAME_FR</code>/<code>ECOZONE_ID</code>/ <code>ECOZONE_NAME_EN</code>/<code>ECOZONE_NAME_FR</code>: previously would have been <code>NA</code> throughout the Priority Landscapes run; now populated via spatial overlap against the ecoregions layer, <code>/</code>-joined where a landscape spans more than one ecoregion or ecozone. Sliver fragments from boundary misalignment between the two independently-digitized layers are excluded using a validated rule (<code>perim_per_area_km &gt;= 3.0</code>), not a manual area-% guess.</li>
+<li>Hectares conversion: every <code>*_km2</code> column becomes <code>*_ha</code> (x 100) in the final assembly step; length columns (<code>rivers_km</code>, <code>coastline_km</code>) stay in km, unconverted.</li>
+<li>One unified schema now drives two separate output products: <code>ERAP_ecoregions</code> and <code>ERAP_priority_landscapes</code>.</li>
+<li>Adopted rounding conventions from the data alignment project (<a href="https://github.com/NCC-CNC/erap-deer-code/issues/23">erap-deer-code#23</a>): no rounding on intermediate values, final output tables round every value (ha/km/%) to 2 decimal places.</li>
+</ul>
+</section>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

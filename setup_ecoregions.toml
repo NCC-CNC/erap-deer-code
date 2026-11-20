@@ -1,0 +1,50 @@
+[landscape]
+landscape_path = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/ecoregions.gdb/ecoregions_ctef_v2_2_terrestrial"
+name_col = "ECOREGION_NAME_EN"
+landscape_path_marine = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/ecoregions.gdb/ecoregions_ctef_v2_2"  # unclipped CTEF
+
+# Pass-through columns -- for the ecoregions run these are the CTEF layer's own attribute names.
+ecoregion_id_col = "ECOREGION_ID"
+ecoregion_name_en_col = "ECOREGION_NAME_EN"
+ecoregion_name_fr_col = "ECOREGION_NAME_FR"
+ecozone_id_col = "ECOZONE_ID"
+ecozone_name_en_col = "ECOZONE_NAME_EN"
+ecozone_name_fr_col = "ECOZONE_NAME_FR"
+
+output_name = "ERAP_2026_ecoregions"
+output_dir = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/output"      # {output_name}_attributes.csv / {output_name}.gdb/{output_name} land here
+processing_dir = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/output/processing/ecoregions"  # used for per-step checkpoint CSVs
+
+[habitat_raster]
+habitat_forest = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/habitat/Forest_AAFC_LUTS_2020_NFIS_2022_30m.tif"
+
+[pressures_raster]
+pressure_intact = "C:/Users/marc.edwards/Documents/gisdata/Canada_human_modification/HM_Aug21_2024_projected_30m/HM_CA_2022_r90_merged_prj_30_intact.tif"
+pressure_modified = "C:/Users/marc.edwards/Documents/gisdata/Canada_human_modification/HM_Aug21_2024_projected_30m/HM_CA_2022_r90_merged_prj_30_modified.tif"
+pressure_forestry = "C:/Users/marc.edwards/Documents/gisdata/Canada_human_modification/HM_Aug21_2024_projected_30m/HM_CA_fr2022_r90_merged_prj_30_binary.tif"
+pressure_energy = "C:/Users/marc.edwards/Documents/gisdata/Canada_human_modification/HM_Aug21_2024_projected_30m/HM_CA_en2022_r90_merged_prj_30_binary.tif"
+pressure_builtup = "C:/Users/marc.edwards/Documents/gisdata/Canada_human_modification/HM_Aug21_2024_projected_30m/HM_CA_bu2022_r90_merged_prj_30_binary.tif"
+pressure_agriculture = "C:/Users/marc.edwards/Documents/gisdata/Canada_human_modification/HM_Aug21_2024_projected_30m/HM_CA_ag2022_r90_merged_prj_30_binary.tif"
+pressure_transport_high = "C:/Users/marc.edwards/Documents/gisdata/Canada_human_modification/HM_Aug21_2024_projected_30m/HM_CA_tr2022_r90_merged_prj_30_binary_high.tif"
+pressure_transport_low = "C:/Users/marc.edwards/Documents/gisdata/Canada_human_modification/HM_Aug21_2024_projected_30m/HM_CA_tr2022_r90_merged_prj_30_binary_low.tif"
+
+[habitat_vector]
+habitat_grassland = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/habitat/habitat.gdb/habitat_grassland"
+habitat_wetland = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/habitat/habitat.gdb/habitat_wetland"
+habitat_lakes = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/habitat/habitat.gdb/habitat_lakes"
+habitat_rivers = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/habitat/habitat.gdb/habitat_rivers"
+habitat_coastline = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/habitat/habitat.gdb/habitat_coastline"
+habitat_peatlands = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/habitat/habitat.gdb/habitat_peatlands"
+
+[protected_data]
+protected_vector_path = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/protected_areas.gdb/cpcad_ncc_dslv_2025"
+wtw_erased_protected = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/wtw.gdb/wtw_erased_protected"
+ncc_fs_ca_path = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/protected_areas.gdb/ncc_fs_ca_2025_dslv"
+ncc_fs_path = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/protected_areas.gdb/ncc_fs_2025_dslv"
+
+[species]
+species_dir = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/tiffs"
+species_metadata_path = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/WTW_NAT_SPECIES_METADATA_project.xlsx"
+
+[actions]
+actions_reference_path = "tables/ERAP Action recommendation reference.xlsx"

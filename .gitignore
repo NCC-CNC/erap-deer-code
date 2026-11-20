@@ -48,3 +48,20 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Local processing/output from repo scripts (GIS data, not source)
+/processing/
+/output/
+
+# Generated GIS data from data_prep/ scripts (not source -- the .py scripts
+# that produce these stay tracked)
+/data_prep/*.gdb/
+/data_prep/*.xlsx
+/data_prep/cache/
+
+# Python bytecode cache (data_prep/*.py, R/fct_intersect_vector_value.py via reticulate)
+__pycache__/
+
+# Working notes on changes to manually port into conservation-profiles --
+# not documentation of this repo, cleared out once applied there
+/CONSERVATION_PROFILES_CHANGES.md
