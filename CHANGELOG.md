@@ -138,3 +138,5 @@
   ([erap-deer-code#23](https://github.com/NCC-CNC/erap-deer-code/issues/23)):
   no rounding on intermediate values, final output tables round every value
   (ha/km/%) to 2 decimal places.
+- Output attributes are now joined to the terrestrial version of the 
+ecoregions and Priority Landscapes.
