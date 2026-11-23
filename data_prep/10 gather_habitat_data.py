@@ -58,7 +58,7 @@ TARGET_SR.loadFromString(
 # Set every path below to this server's actual location before running ----
 
 habitat_forest_source     = r"S:\CONS_TECH\PRZ\DATA\PREP\Habitat\Forest\Forest_AAFC_LUTS_2020_NFIS_2022_30m.tif"  # raster (.tif)
-habitat_grassland_source  = r"S:\CONS_TECH\PRZ\DATA\PREP\Habitat\Grassland\Grassland_Data.gdb\RasterToPoly\AAFC_LUTS_2020_Grassland_Managed61_Unmanaged62_Clip"  # vector (.shp or gdb feature class)
+habitat_grassland_source  = r":\CONS_TECH\PRZ\DATA\PREP\Habitat\Grassland\Grassland_Data.gdb\RasterToPoly\AAFC_LUTS_2020_v5_Grassland_Clip"  # vector (.shp or gdb feature class)
 habitat_wetland_source    = r"S:\CONS_TECH\PRZ\DATA\PREP\Habitat\Wetland\Processing.gdb\canvec_saturated_soil_2_merge_20230201_pw_dissolve"  # vector
 habitat_lakes_source      = r"S:\CONS_TECH\PRZ\DATA\PREP\Habitat\Lakes\CanVec_NHN_Hydro\Hydrol_Final.gdb\NHN_Waterbodies_2022_Dissolve_Lakes_LargeRivers"  # vector
 habitat_rivers_source     = r"S:\CONS_TECH\PRZ\DATA\PREP\Habitat\Lakes\CanVec_NHN_Hydro\Hydrol_Final.gdb\NHN_Watercourses_LinearFlow_2022_Erase_Waterbodies"  # vector
