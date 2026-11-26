@@ -21,7 +21,9 @@ setup <- function(toml_path) {
     "reticulate",
     "stringr",
     "openxlsx",
-    "tibble"
+    "tibble",
+    "jsonlite",
+    "pagedown"
   )
 
   for (pkg in required_pkgs) {

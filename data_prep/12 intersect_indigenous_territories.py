@@ -17,6 +17,18 @@
 # Fragments sharing the same area ID + NATION_NAME are grouped into one row
 # (overlap_km2 summed) before writing the CSV, since report cards need one
 # line per Nation per area, not one per island.
+#
+# overlap_pcnt_landscape is overlap_km2 / the area feature's own total area
+# (this script's ecoregions/priority_landscapes layers, summed by
+# area_fields in case a landscape is itself multi-row/multipart) -- not
+# landscape_ha from the main ERAP pipeline, since that's read from a
+# different ecoregions layer for ecoregions (see the comment on the
+# non-Arctic-filtered layer below) and a differently-suffixed Priority
+# Landscapes layer.
+#
+# overlap_pcnt_territory is overlap_km2 / that Nation's own total territory
+# area (summed by NATION_NAME off territories_renamed, same multipart
+# caution as the landscape side).
 
 import arcpy
 import csv
@@ -59,7 +71,25 @@ arcpy.management.AlterField(territories_renamed, "description", "NATION_URL", "N
 arcpy.management.RepairGeometry(territories_renamed)
 
 
+def total_areas_km2(fc, key_fields):
+    # Total area per key_fields key, straight off fc (not the fragmented
+    # Intersect output) -- SHAPE@AREA returns square metres in this
+    # project's projected CRS, same planar measurement the
+    # !shape.area@squarekilometers! token below uses, just without its
+    # automatic unit conversion.
+    totals = {}
+    with arcpy.da.SearchCursor(fc, key_fields + ["SHAPE@AREA"]) as cursor:
+        for row in cursor:
+            key, area_m2 = row[:-1], row[-1]
+            key = key[0] if len(key) == 1 else key
+            totals[key] = totals.get(key, 0) + area_m2 / 1e6
+    return totals
+
+
 def intersect_to_csv(area_fc, area_fields, out_name):
+    landscape_totals  = total_areas_km2(area_fc, area_fields)
+    territory_totals  = total_areas_km2(territories_renamed, ["NATION_NAME"])
+
     print(f"\nrunning Intersect against {os.path.basename(area_fc)}...")
     intersect_fc = os.path.join(scratch_gdb, out_name)
     arcpy.analysis.Intersect([territories_renamed, area_fc], intersect_fc, join_attributes="ALL")
@@ -76,12 +106,20 @@ def intersect_to_csv(area_fc, area_fields, out_name):
             grouped[key] = grouped.get(key, 0) + overlap
     print(f"collapsed to {len(grouped)} area x Nation rows")
 
+    out_fields = fields + ["overlap_pcnt_landscape", "overlap_pcnt_territory"]
     out_csv = os.path.join(output_dir, f"{out_name}.csv")
     with open(out_csv, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.writer(f)
-        writer.writerow(fields)
+        writer.writerow(out_fields)
         for key, overlap in grouped.items():
-            writer.writerow(list(key) + [overlap])
+            landscape_key = key[:len(area_fields)]
+            nation_name = key[len(area_fields)]
+            landscape_km2 = landscape_totals[landscape_key]
+            territory_km2 = territory_totals[nation_name]
+            overlap_km2 = round(overlap, 2)
+            overlap_pcnt_landscape = round(overlap / landscape_km2 * 100, 1)
+            overlap_pcnt_territory = round(overlap / territory_km2 * 100, 1)
+            writer.writerow(list(key) + [overlap_km2, overlap_pcnt_landscape, overlap_pcnt_territory])
 
     print(f"wrote {out_csv}")
     return out_csv

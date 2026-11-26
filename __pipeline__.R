@@ -19,29 +19,29 @@ landscapes <- load_landscapes(cfg)
 
 source("R/03_protected_intactness.R")
 protected_intactness_tab <- protected_intactness(cfg, landscapes)
-readr::write_csv(protected_intactness_tab, file.path(cfg$landscape$processing_dir, "protected_intactness.csv"))
+readr::write_excel_csv(protected_intactness_tab, file.path(cfg$landscape$processing_dir, "protected_intactness.csv"))
 # protected_intactness_tab <- readr::read_csv(file.path(cfg$landscape$processing_dir, "protected_intactness.csv"))
 
 source("R/04_habitat.R")
 habitat_tab <- habitat(cfg, landscapes)
-readr::write_csv(habitat_tab, file.path(cfg$landscape$processing_dir, "habitat_table.csv"))
+readr::write_excel_csv(habitat_tab, file.path(cfg$landscape$processing_dir, "habitat_table.csv"))
 # habitat_tab <- readr::read_csv(file.path(cfg$landscape$processing_dir, "habitat_table.csv"))
 
 source("R/05_pressures.R")
 pressures_tab <- pressures(cfg, landscapes)
-readr::write_csv(pressures_tab, file.path(cfg$landscape$processing_dir, "pressures_table.csv"))
+readr::write_excel_csv(pressures_tab, file.path(cfg$landscape$processing_dir, "pressures_table.csv"))
 # pressures_tab <- readr::read_csv(file.path(cfg$landscape$processing_dir, "pressures_table.csv"))
 
 source("R/06_wtw.R")
 wtw_tab <- wtw(cfg, landscapes)
-readr::write_csv(wtw_tab, file.path(cfg$landscape$processing_dir, "wtw_table.csv"))
+readr::write_excel_csv(wtw_tab, file.path(cfg$landscape$processing_dir, "wtw_table.csv"))
 # wtw_tab <- readr::read_csv(file.path(cfg$landscape$processing_dir, "wtw_table.csv"))
 
 source("R/fct_build_species_tab.R")
 source("R/07_species.R")
 species_out <- species(cfg, landscapes)
-readr::write_csv(species_out$species_tab,     file.path(cfg$landscape$processing_dir, "species_table.csv"))
-readr::write_csv(species_out$species_summary, file.path(cfg$landscape$processing_dir, "species_summary.csv"))
+readr::write_excel_csv(species_out$species_tab,     file.path(cfg$landscape$processing_dir, "species_table.csv"))
+readr::write_excel_csv(species_out$species_summary, file.path(cfg$landscape$processing_dir, "species_summary.csv"))
 # species_out <- list(
 #   species_tab     = readr::read_csv(file.path(cfg$landscape$processing_dir, "species_table.csv")),
 #   species_summary = readr::read_csv(file.path(cfg$landscape$processing_dir, "species_summary.csv"))
@@ -49,8 +49,8 @@ readr::write_csv(species_out$species_summary, file.path(cfg$landscape$processing
 
 source("R/08_actions.R")
 actions_out <- actions(cfg, landscapes, protected_intactness_tab, wtw_tab, species_out$species_tab)
-readr::write_csv(actions_out$actions_long, file.path(cfg$landscape$processing_dir, "actions_table.csv"))
-readr::write_csv(actions_out$actions_wide, file.path(cfg$landscape$processing_dir, "actions_summary.csv"))
+readr::write_excel_csv(actions_out$actions_long, file.path(cfg$landscape$processing_dir, "actions_table.csv"))
+readr::write_excel_csv(actions_out$actions_wide, file.path(cfg$landscape$processing_dir, "actions_summary.csv"))
 # actions_out <- list(
 #   actions_long = readr::read_csv(file.path(cfg$landscape$processing_dir, "actions_table.csv")),
 #   actions_wide = readr::read_csv(file.path(cfg$landscape$processing_dir, "actions_summary.csv"))
@@ -58,6 +58,12 @@ readr::write_csv(actions_out$actions_wide, file.path(cfg$landscape$processing_di
 
 source("R/09_gather_and_write.R")
 final_tab <- gather_and_write(cfg, landscapes, protected_intactness_tab, habitat_tab, pressures_tab, wtw_tab, actions_out$actions_wide)
+# final_tab <- readr::read_csv(file.path(cfg$landscape$output_dir, paste0(cfg$landscape$output_name, "_attributes.csv")))
+
+source("R/10_build_profiles.R")
+build_profiles(cfg, final_tab, species_out$species_tab, actions_out$actions_long, lang = "en")
+# Once labels_fr/actions translations are in, also run:
+# build_profiles(cfg, final_tab, species_out$species_tab, actions_out$actions_long, lang = "fr")
 
 end_time <- Sys.time()
 print(end_time - start_time)

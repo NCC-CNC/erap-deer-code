@@ -1,221 +1,425 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ERAP Template</title>
-
+<title>Landscape resiliency assessment template</title>
 <style>
+  /* Local fonts (offline-safe) -- place the 6 .woff2 files in ./fonts/,
+     matching conservation-profiles' own font setup. */
+  @font-face{font-family:"Source Serif 4";font-weight:400;font-display:swap;src:url("fonts/source-serif-4-400.woff2") format("woff2");}
+  @font-face{font-family:"Source Serif 4";font-weight:600;font-display:swap;src:url("fonts/source-serif-4-600.woff2") format("woff2");}
+  @font-face{font-family:"Source Serif 4";font-weight:700;font-display:swap;src:url("fonts/source-serif-4-700.woff2") format("woff2");}
+  @font-face{font-family:"Source Sans 3";font-weight:400;font-display:swap;src:url("fonts/source-sans-3-400.woff2") format("woff2");}
+  @font-face{font-family:"Source Sans 3";font-weight:600;font-display:swap;src:url("fonts/source-sans-3-600.woff2") format("woff2");}
+  @font-face{font-family:"Source Sans 3";font-weight:700;font-display:swap;src:url("fonts/source-sans-3-700.woff2") format("woff2");}
+
   :root{
     --deep-green:#2D602E; --vibrant-green:#33862B; --light-green:#82CC2E;
     --blue:#0075E4; --purple:#7A59FC; --orange:#FF5B00; --yellow:#FFC41D;
     --gray:#6F6F6F; --line:#E4E2D8; --ink:#1c1c1c;
-    --serif:Georgia,"Times New Roman",serif;
-    --sans:system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
+    --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+    --sans:"Source Sans 3",system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
   }
   body{margin:0;background:#f0eee9;font-family:var(--sans);}
-  .pg{width:1056px;height:816px;position:relative;background:#fff;color:var(--ink);box-sizing:border-box;overflow:hidden;}
+  .pg{width:1056px;height:816px;margin:24px auto;position:relative;background:#fff;color:var(--ink);box-sizing:border-box;overflow:hidden;}
   .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;}
   .tile-lbl{font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
   .val-serif{font-family:var(--serif);font-weight:600;line-height:1;}
+  .hab>div[style*="border-radius:8px"]{padding:5px 13px !important;}
+  .hab>div[style*="border-radius:8px"]>div:first-child{margin-bottom:4px !important;}
+  .terr-wrap{display:flex;gap:14px;}
+  .terr-wrap>div{flex:1;min-width:0;}
+  .terr-t{border-collapse:collapse;width:100%;table-layout:fixed;font-size:8.5px;}
+  .terr-t th,.terr-t td{padding:0 0 1px;vertical-align:top;line-height:1.22;}
+  .terr-t th{font-weight:600;color:#cfe3c2;text-align:right;width:30px;padding-bottom:2px;border-bottom:1px solid rgba(255,255,255,.3);}
+  .terr-t th:first-child{text-align:left;width:auto;}
+  .terr-t td.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;padding-right:2px;}
+  .terr-t a{color:#eaf3e2;text-decoration:underline;}
+  .terr-t a:hover{color:var(--light-green);}
   a{color:var(--vibrant-green);}
   a:hover{color:var(--deep-green);}
-</style>
 
+  @media print{
+    @page{size:11in 8.5in;margin:0;}
+    body{background:#fff;}
+    .pg{margin:0;box-shadow:none;width:11in;height:8.5in;break-inside:avoid;}
+    .pg + .pg{break-before:page;}
+  }
+</style>
 </head>
 <body>
-<div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px;">
+<div class="pg" id="page1" style="background:var(--deep-green);color:#fff;"><!-- rendered by script --></div>
+<div class="pg" id="page2" style="background:var(--deep-green);color:#fff;"><!-- rendered by script --></div>
 
-<div class="pg" style="background:var(--deep-green);color:#fff;padding:34px 44px;display:flex;flex-direction:column;gap:18px;box-sizing:border-box;">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+<script>
+/* >>> BEGIN_REPORT_DATA (pipeline replaces this object) <<< */
+const REPORT_DATA = {
+  landscapeName: "Western Alberta Upland",
+  areaHa: 1000000,
+  ecozone: "Boreal Plain",
+  logoUrl: "NCC_Wordmark_E_Logo_KO.png",
+  generatedDate: "September 11, 2026",
+  overview: { protectedPct: 1.6, wtwPct: 23.8 },
+  species: { total: 512, needProtection: 461, atRisk: 32, atRiskNeedProtection: 25 },
+  intactness: { intactPct: 67.4, modifiedPct: 32.6, protectedIntactPct: 1.2, protectedModifiedPct: 0.4 },
+  pressures: [
+    { name: "Energy and mining", pct: 16.8 },
+    { name: "Forestry", pct: 13.7 },
+    { name: "Transport — lower intensity", pct: 7.2 },
+    { name: "Transport — higher intensity", pct: 4.0 },
+    { name: "Agriculture", pct: 1.1 },
+    { name: "Urban and built up", pct: 0.2 }
+  ],
+  habitatArea: [
+    { name: "Forest",     coverPct: 76.4, protectedPct: 1.7, wtwPct: 23.2 },
+    { name: "Grassland",  coverPct: 0.1,  protectedPct: 6.8, wtwPct: 33.1 },
+    { name: "Wetland",    coverPct: 4.5,  protectedPct: 1.6, wtwPct: 18.0 },
+    { name: "Peatlands",  coverPct: 0,    protectedPct: 0,   wtwPct: 0 },
+    { name: "Lakes",      coverPct: 1.0,  protectedPct: 5.1, wtwPct: 40.0 }
+  ],
+  habitatLinear: [
+    { name: "Rivers",     km: 60915, protectedPct: 2.3, wtwPct: 23.0 },
+    { name: "Coastline",  km: 60915, protectedPct: 2.3, wtwPct: 23.0 }
+  ],
+  actions: [
+    { title: "Area-based conservation - 30x30 goals", description: "Area-based conservation is recommended because landscape protection is less than 30%." },
+    { title: "Area-based conservation - endemic SAR", description: "Area-based conservation is recommended because protection goals for at least one SAR can only be met in this landscape." },
+    { title: "Area-based conservation - SAR", description: "Area-based conservation is recommended because protection goals for at least five SAR will likely need to include this landscape." },
+    { title: "Area-based conservation - biodiversity urgency", description: "Area-based conservation is recommended because more than 15% of the landscape is an optimal location for meeting Canada-wide biodiversity goals." },
+    { title: "Area-based conservation - biodiversity opportunities", description: "Area-based conservation is recommended because there are lots of opportunities for meeting biodiversity goals." },
+    { title: "Site / Area stewardship", description: "NCC is the management authority on projects and needs to manage or steward land." },
+    { title: "Ecosystem & Natural Process (Re)Creation - 30x30 goals", description: "Landscape scale restoration is recommended because the combined area of existing protection and intact habitat available for protection is less than 30%." },
+    { title: "Ecosystem & Natural Process (Re)Creation - opportunities", description: "Landscape scale restoration is recommended because the landscape is highly modified such that there are lots of opportunities for landscape restoration projects." },
+    { title: "Alliance & Partnership Development - land sharing", description: "NCC owns fee-simple land. Consider appropriate land sharing strategies." }
+  ],
+  territories: [
+    { name: "K’ómoks", url: "https://native-land.ca/listings/territories/komoks", pctLandscape: 12.4, pctTerritory: 38.2 },
+    { name: "Nisg̱a’a", url: "https://native-land.ca/listings/territories/nisg%cc%b1aa", pctLandscape: 0.3, pctTerritory: 1.6 }
+  ]
+};
+/* >>> END_REPORT_DATA <<< */
+
+/* >>> BEGIN_LABELS (pipeline replaces this object) <<< */
+// Every piece of UI chrome text lives here so a French build only needs a
+// second object with these same keys -- the renderer below never hardcodes
+// English. Template strings use {token} placeholders, filled by fmt().
+const LABELS = {
+  locale: "en-CA",
+  eyebrow: "Landscape resiliency assessment",
+  areaLabel: "Area",
+  areaUnit: "ha",
+  ecozoneLabel: "Ecozone(s)",
+  logoAlt: "Nature Conservancy of Canada",
+  footerOrg: "Nature Conservancy of Canada",
+  footerGenerated: "Assessment generated",
+  pageLabel1: "Page 1/2",
+  pageLabel2: "Page 2/2",
+  overviewTitle: "Overview",
+  tileAreaProtected: "Area protected",
+  tileWtw: "Where to Work priority",
+  speciesAllTitle: "All species",
+  speciesTotalLabel: "total species",
+  speciesNeedProtectionLabel: "need more protection",
+  speciesAtRiskTitle: "Species at risk",
+  speciesAtRiskLabel: "at risk",
+  intactnessTitle: "Landscape intactness",
+  donutAriaTemplate: "Landscape intactness: intact {intactPct} percent, of which {protIntactPct} percent is protected; modified {modifiedPct} percent, of which {protModifiedPct} percent is protected",
+  donutIntactLabel: "INTACT",
+  colProtected: "Protected",
+  colUnprotected: "Unprotected",
+  colTotal: "Total",
+  rowIntact: "Intact",
+  rowModified: "Modified",
+  intactHeadlineTemplate: "{pct}% of landscape is intact",
+  unprotectedNone: "There is no unprotected area left in this landscape",
+  unprotectedAllIntact: "Unprotected areas are all intact",
+  unprotectedAllModified: "Unprotected areas are all modified",
+  unprotectedMostlyIntact: "Unprotected areas are mostly intact",
+  unprotectedMostlyModified: "Unprotected areas are mostly modified",
+  unprotectedMix: "Unprotected areas are a mix of intact and modified land",
+  pressuresTitle: "Pressures — % of landscape*",
+  pressuresFootnote: "*Pressures can overlap so sums may not match modified %",
+  habitatAreaTitle: "Area habitats — % of landscape cover*",
+  habitatAreaFootnote: "*Habitats overlap so total % may exceed 100",
+  habitatLinearTitle: "Linear habitats — total in landscape",
+  habOfLandscape: "of landscape",
+  habProtected: "protected",
+  habWtw: "Where to Work priority",
+  habLinearInLandscape: "in landscape",
+  habLinearKmUnit: "km",
+  actionsTitle: "Action recommendations",
+  actionsEmpty: "No actions are currently recommended for this landscape.",
+  territoriesTitle: "Indigenous territories",
+  territoriesIntroTemplate: "List shows the % of the landscape covered by the territory, and the % of the full territory that falls in the landscape. Map data provided by {link} for educational and non-commercial use.",
+  territoriesLinkText: "Native Land Digital",
+  territoriesExampleTemplate: "List rows can be read as follows: {pctLandscape}% of the landscape is covered by the {name} territory, representing {pctTerritory}% of the total territory area",
+  territoriesEmpty: "No Indigenous territories are recorded for this landscape in native-land.ca's dataset.",
+  terrColTerritory: "Territory",
+  terrColLandPct: "Land %",
+  terrColTerrPct: "Terr %"
+};
+/* >>> END_LABELS <<< */
+
+/* ============================================================
+   RENDERER — no need to edit below this line.
+   ============================================================ */
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const fmt = (s, vars) => s.replace(/\{(\w+)\}/g, (_, k) => vars[k]);
+const nf  = n => Number(n).toLocaleString(LABELS.locale);
+const fx  = (n,d=1) => Number(n).toFixed(d);
+const pct1n = n => (n > 0 && n < 1) ? "<1" : fx(n); // no % sign: used under the "Land %" / "Terr %" column headings
+
+function tile(label, value){
+  return `<div style="flex:1;background:rgba(255,255,255,.09);border-radius:8px;padding:14px 16px;">
+    <div class="tile-lbl" style="color:#cfe3c2;">${esc(label)}</div>
+    <div class="val-serif" style="font-size:30px;margin-top:4px;">${value}</div>
+  </div>`;
+}
+
+function speciesCard(title, color, aVal, aLbl, bVal, bLbl){
+  return `<div style="flex:1;background:rgba(255,255,255,.09);border-radius:9px;padding:14px 16px;">
+    <div style="font-family:var(--serif);font-size:13px;font-weight:700;color:${color};margin-bottom:10px;">${esc(title)}</div>
+    <div style="display:flex;gap:16px;">
+      <div><div class="val-serif" style="font-size:24px;color:${color};">${nf(aVal)}</div><div style="font-size:9.5px;color:#cfe3c2;margin-top:4px;">${esc(aLbl)}</div></div>
+      <div><div class="val-serif" style="font-size:24px;color:${color};">${nf(bVal)}</div><div style="font-size:9.5px;color:#cfe3c2;margin-top:4px;">${esc(bLbl)}</div></div>
+    </div>
+  </div>`;
+}
+
+// 4-segment donut (protected-intact / unprotected-intact / unprotected-modified /
+// protected-modified), drawn as stacked dasharray circles on a pathLength=100
+// scale so segment lengths are plain percentages -- same approach as the
+// original mockup, just computed from the 4 raw values instead of hardcoded.
+function donutSvg(I){
+  const segs = [
+    { pct: I.protectedIntactPct,                      color: "#82CC2E" },
+    { pct: I.intactPct - I.protectedIntactPct,         color: "#CBEB9F" },
+    { pct: I.modifiedPct - I.protectedModifiedPct,      color: "#A6A6A6" },
+    { pct: I.protectedModifiedPct,                      color: "#787878" }
+  ];
+  let cum = 0;
+  const circles = segs.map(s => {
+    const dash = `${fx(Math.max(s.pct,0),1)} ${fx(Math.max(100 - s.pct,0),1)}`;
+    const offset = -cum;
+    cum += s.pct;
+    return `<circle cx="70" cy="70" r="50" pathLength="100" stroke="${s.color}" stroke-dasharray="${dash}" stroke-dashoffset="${fx(offset,1)}"/>`;
+  }).join('');
+  const ariaLabel = fmt(LABELS.donutAriaTemplate, {
+    intactPct: fx(I.intactPct), protIntactPct: fx(I.protectedIntactPct),
+    modifiedPct: fx(I.modifiedPct), protModifiedPct: fx(I.protectedModifiedPct)
+  });
+  return `<svg width="96" height="96" viewBox="0 0 140 140" style="flex-shrink:0;" role="img" aria-label="${esc(ariaLabel)}">
+    <g transform="rotate(-90 70 70)" fill="none" stroke-width="24">${circles}</g>
+    <text x="70" y="74" text-anchor="middle" fill="#fff" font-family="'Source Serif 4',Georgia,'Times New Roman',serif" font-size="23" font-weight="700">${fx(I.intactPct)}%</text>
+    <text x="70" y="89" text-anchor="middle" fill="#b7e08a" font-size="9.5" letter-spacing=".6">${esc(LABELS.donutIntactLabel)}</text>
+  </svg>`;
+}
+
+// Headline 1: the intact % restated as a sentence. Headline 2 classifies the
+// unprotected share of the landscape (iu = unprotected intact, mu =
+// unprotected modified, both % of landscape) -- 0.005 is an epsilon against
+// the 2dp rounding every landscape attribute already went through upstream
+// (erap-deer-code#23), so it's really just a "is this exactly 0" check.
+function intactnessHeadlines(I, unprotIntact, unprotModified){
+  const iu = unprotIntact, mu = unprotModified;
+  const intactHeadline = fmt(LABELS.intactHeadlineTemplate, { pct: fx(I.intactPct) });
+  let unprotectedHeadline;
+  if (iu + mu < 0.005) {
+    unprotectedHeadline = LABELS.unprotectedNone;
+  } else if (mu < 0.005) {
+    unprotectedHeadline = LABELS.unprotectedAllIntact;
+  } else if (iu < 0.005) {
+    unprotectedHeadline = LABELS.unprotectedAllModified;
+  } else {
+    const f = iu / (iu + mu);
+    if (f >= 2/3) unprotectedHeadline = LABELS.unprotectedMostlyIntact;
+    else if (f <= 1/3) unprotectedHeadline = LABELS.unprotectedMostlyModified;
+    else unprotectedHeadline = LABELS.unprotectedMix;
+  }
+  return { intactHeadline, unprotectedHeadline };
+}
+
+function intactnessBlock(I){
+  const unprotIntact = I.intactPct - I.protectedIntactPct;
+  const unprotModified = I.modifiedPct - I.protectedModifiedPct;
+  const { intactHeadline, unprotectedHeadline } = intactnessHeadlines(I, unprotIntact, unprotModified);
+  return `<div style="border:1px solid rgba(255,255,255,.28);border-radius:8px;padding:8px 18px;display:flex;align-items:center;gap:18px;">
+    ${donutSvg(I)}
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:2px;">${esc(LABELS.intactnessTitle)}</div>
+      <div style="font-size:11.5px;color:#fff;line-height:1.22;">${esc(intactHeadline)}</div>
+      <div style="font-size:11.5px;color:#cfe3c2;line-height:1.22;margin:0 0 3px;">${esc(unprotectedHeadline)}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <tr><th style="font-weight:600;color:#cfe3c2;text-align:left;padding:3px 4px;"></th><th style="font-weight:600;color:#cfe3c2;text-align:left;padding:3px 4px;">${esc(LABELS.colProtected)}</th><th style="font-weight:600;color:#cfe3c2;text-align:left;padding:3px 4px;">${esc(LABELS.colUnprotected)}</th><th style="font-weight:600;color:#cfe3c2;text-align:left;padding:3px 4px;">${esc(LABELS.colTotal)}</th></tr>
+        <tr><th style="font-weight:600;color:#cfe3c2;text-align:left;padding:5px 4px;border-top:1px solid rgba(255,255,255,.2);">${esc(LABELS.rowIntact)}</th><td style="padding:5px 4px;white-space:nowrap;border-top:1px solid rgba(255,255,255,.2);"><span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:#82CC2E;vertical-align:middle;margin-right:5px;"></span>${fx(I.protectedIntactPct)}%</td><td style="padding:5px 4px;white-space:nowrap;border-top:1px solid rgba(255,255,255,.2);"><span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:#CBEB9F;vertical-align:middle;margin-right:5px;"></span>${fx(unprotIntact)}%</td><td style="padding:5px 4px;white-space:nowrap;border-top:1px solid rgba(255,255,255,.2);"><strong>${fx(I.intactPct)}%</strong></td></tr>
+        <tr><th style="font-weight:600;color:#cfe3c2;text-align:left;padding:5px 4px;border-top:1px solid rgba(255,255,255,.2);">${esc(LABELS.rowModified)}</th><td style="padding:5px 4px;white-space:nowrap;border-top:1px solid rgba(255,255,255,.2);"><span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:#787878;vertical-align:middle;margin-right:5px;"></span>${fx(I.protectedModifiedPct)}%</td><td style="padding:5px 4px;white-space:nowrap;border-top:1px solid rgba(255,255,255,.2);"><span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:#A6A6A6;vertical-align:middle;margin-right:5px;"></span>${fx(unprotModified)}%</td><td style="padding:5px 4px;white-space:nowrap;border-top:1px solid rgba(255,255,255,.2);"><strong>${fx(I.modifiedPct)}%</strong></td></tr>
+      </table>
+    </div>
+  </div>`;
+}
+
+// Pressures are passed in already sorted (desc by pct) by the R side, same
+// convention as conservation-profiles' own 06_build_profile_html.R. Bar
+// width is relative to the largest pressure in this landscape, not a fixed
+// scale, so the top bar always reaches 100%.
+function pressuresBlock(list){
+  const max = Math.max(1, ...list.map(p => p.pct));
+  const rows = list.map(p => {
+    const w = Math.max(2, Math.round(p.pct / max * 100));
+    return `<div style="display:grid;grid-template-columns:1fr 42px;align-items:center;gap:10px;">
+      <div><div style="font-size:11px;color:#eaf3e2;margin-bottom:3px;">${esc(p.name)}</div><div style="height:6px;border-radius:3px;background:rgba(255,255,255,.14);"><div style="height:100%;border-radius:3px;background:var(--light-green);width:${w}%;"></div></div></div>
+      <div style="font-size:11px;text-align:right;color:#fff;font-weight:600;">${fx(p.pct)}%</div>
+    </div>`;
+  }).join('');
+  return `<div style="flex:1;">
+    <div style="font-size:12px;font-weight:700;letter-spacing:.04em;color:#cfe3c2;margin-bottom:6px;">${esc(LABELS.pressuresTitle)}</div>
+    <div style="display:flex;flex-direction:column;gap:5px;">${rows}</div>
+    <div style="font-size:8.5px;font-style:italic;color:#9dc47f;margin-top:3px;">${esc(LABELS.pressuresFootnote)}</div>
+  </div>`;
+}
+
+function habAreaRow(h){
+  return `<div style="background:rgba(255,255,255,.09);border-radius:8px;padding:8px 13px;">
+    <div style="font-family:var(--serif);font-size:12.5px;font-weight:700;margin-bottom:6px;">${esc(h.name)}</div>
+    <div style="display:flex;gap:12px;">
+      <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;line-height:1;">${fx(h.coverPct)}%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">${esc(LABELS.habOfLandscape)}</div></div>
+      <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--light-green);line-height:1;">${fx(h.protectedPct)}%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">${esc(LABELS.habProtected)}</div></div>
+      <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--yellow);line-height:1;">${fx(h.wtwPct)}%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">${esc(LABELS.habWtw)}</div></div>
+    </div>
+  </div>`;
+}
+
+function habLinearRow(h){
+  return `<div style="background:rgba(255,255,255,.09);border-radius:8px;padding:8px 13px;">
+    <div style="font-family:var(--serif);font-size:12.5px;font-weight:700;margin-bottom:6px;">${esc(h.name)}</div>
+    <div style="display:flex;gap:12px;">
+      <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;line-height:1;">${nf(Math.round(h.km))} ${esc(LABELS.habLinearKmUnit)}</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">${esc(LABELS.habLinearInLandscape)}</div></div>
+      <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--light-green);line-height:1;">${fx(h.protectedPct)}%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">${esc(LABELS.habProtected)}</div></div>
+      <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--yellow);line-height:1;">${fx(h.wtwPct)}%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">${esc(LABELS.habWtw)}</div></div>
+    </div>
+  </div>`;
+}
+
+function habitatColumn(D){
+  const area   = (D.habitatArea   || []).map(habAreaRow).join('');
+  const linear = (D.habitatLinear || []).map(habLinearRow).join('');
+  return `<div class="hab" style="display:flex;flex-direction:column;gap:6px;">
+    <div style="font-size:12px;font-weight:700;letter-spacing:.04em;color:#cfe3c2;">${esc(LABELS.habitatAreaTitle)}</div>
+    ${area}
+    <div style="font-size:8.5px;font-style:italic;color:#9dc47f;">${esc(LABELS.habitatAreaFootnote)}</div>
+    <div style="font-size:12px;font-weight:700;letter-spacing:.04em;color:#cfe3c2;margin-top:4px;">${esc(LABELS.habitatLinearTitle)}</div>
+    ${linear}
+  </div>`;
+}
+
+function pageHeader(D){
+  return `<div style="display:flex;justify-content:space-between;align-items:flex-start;">
     <div>
-      <div class="eyebrow" style="color:#b7e08a;">Landscape resiliency assessment</div>
-      <h1 style="font-family:var(--serif);font-size:32px;font-weight:600;margin:6px 0 0;">Western Alberta Upland</h1>
-      <div style="margin-top:8px;font-size:12px;"><span style="color:#b7e08a;font-size:10px;letter-spacing:.1em;text-transform:uppercase;">Area&nbsp;</span><strong>1,000,000 ha</strong> (<span style="color:var(--yellow);font-weight:700;">1/100</span>)</div>
-      <div style="margin-top:6px;font-size:12px;"><span style="color:#b7e08a;font-size:10px;letter-spacing:.1em;text-transform:uppercase;">Ecozone&nbsp;</span><strong>Boreal Plain</strong></div>
+      <div class="eyebrow" style="color:#b7e08a;">${esc(LABELS.eyebrow)}</div>
+      <h1 style="font-family:var(--serif);font-size:32px;font-weight:600;margin:6px 0 0;">${esc(D.landscapeName)}</h1>
+      <div style="margin-top:8px;font-size:12px;"><span style="color:#b7e08a;font-size:10px;letter-spacing:.1em;text-transform:uppercase;">${esc(LABELS.areaLabel)}&nbsp;</span><strong>${nf(D.areaHa)} ${esc(LABELS.areaUnit)}</strong></div>
+      <div style="margin-top:6px;font-size:12px;"><span style="color:#b7e08a;font-size:10px;letter-spacing:.1em;text-transform:uppercase;">${esc(LABELS.ecozoneLabel)}&nbsp;</span><strong>${esc(D.ecozone)}</strong></div>
     </div>
-    <img src="https://dummyimage.com/172x46/ffffff/2D602E.png&text=NCC" style="width:172px;height:46px;object-fit:contain;">
+    <img src="${esc(D.logoUrl)}" style="width:172px;height:46px;object-fit:contain;" alt="${esc(LABELS.logoAlt)}" onerror="this.style.display='none'">
   </div>
-  <div style="border-top:2px solid rgba(255,255,255,.28);"></div>
+  <div style="border-top:2px solid rgba(255,255,255,.28);"></div>`;
+}
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;flex:1;position:relative;">
-    <div style="position:absolute;top:0;bottom:0;left:50%;width:0;border-left:2px solid rgba(255,255,255,.28);"></div>
-    <div style="display:flex;flex-direction:column;gap:16px;">
-      <div style="font-size:12px;font-weight:700;letter-spacing:.04em;color:#cfe3c2;">Overview</div>
-      <div style="display:flex;gap:14px;">
-        <div style="flex:1;background:rgba(255,255,255,.09);border-radius:8px;padding:14px 16px;">
-          <div class="tile-lbl" style="color:#cfe3c2;">Area protected</div>
-          <div class="val-serif" style="font-size:30px;margin-top:4px;">1.6%</div>
-        </div>
-        <div style="flex:1;background:rgba(255,255,255,.09);border-radius:8px;padding:14px 16px;">
-          <div class="tile-lbl" style="color:#cfe3c2;">WtW priority</div>
-          <div class="val-serif" style="font-size:30px;margin-top:4px;">23.8%</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:14px;">
-        <div style="flex:1;background:rgba(255,255,255,.09);border-radius:9px;padding:14px 16px;">
-          <div style="font-family:var(--serif);font-size:13px;font-weight:700;margin-bottom:10px;">All species</div>
-          <div style="display:flex;gap:16px;">
-            <div><div class="val-serif" style="font-size:24px;">512</div><div style="font-size:9.5px;color:#cfe3c2;margin-top:4px;">total species</div></div>
-            <div><div class="val-serif" style="font-size:24px;">461</div><div style="font-size:9.5px;color:#cfe3c2;margin-top:4px;">need more protection</div></div>
-          </div>
-        </div>
-        <div style="flex:1;background:rgba(255,255,255,.09);border-radius:9px;padding:14px 16px;">
-          <div style="font-family:var(--serif);font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:10px;">Species at risk</div>
-          <div style="display:flex;gap:16px;">
-            <div><div class="val-serif" style="font-size:24px;color:var(--yellow);">32</div><div style="font-size:9.5px;color:#cfe3c2;margin-top:4px;">at risk</div></div>
-            <div><div class="val-serif" style="font-size:24px;color:var(--yellow);">25</div><div style="font-size:9.5px;color:#cfe3c2;margin-top:4px;">need more protection</div></div>
-          </div>
-        </div>
-      </div>
-      <div style="border:1px solid rgba(255,255,255,.28);border-radius:8px;padding:16px 18px;display:flex;align-items:center;gap:20px;">
-        <div style="position:relative;width:84px;height:84px;flex-shrink:0;border-radius:50%;background:conic-gradient(var(--light-green) 0 67.4%, rgba(255,255,255,.18) 67.4% 100%);">
-          <div style="position:absolute;inset:11px;border-radius:50%;background:var(--deep-green);display:flex;flex-direction:column;align-items:center;justify-content:center;">
-            <div style="font-family:var(--serif);font-size:18px;font-weight:700;">67.4%</div>
-            <div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#b7e08a;">intact</div>
-          </div>
-        </div>
-        <div style="flex:1;font-size:13px;">
-          <div style="font-weight:700;margin-bottom:8px;">Landscape intactness</div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="width:11px;height:11px;border-radius:3px;background:var(--light-green);"></span>Intact <strong style="margin-left:auto;">67.4%</strong></div>
-          <div style="display:flex;align-items:center;gap:8px;"><span style="width:11px;height:11px;border-radius:3px;background:rgba(255,255,255,.35);"></span>Modified <strong style="margin-left:auto;">32.6%</strong></div>
-        </div>
-      </div>
-      <div style="flex:1;">
-        <div style="font-size:12px;font-weight:700;letter-spacing:.04em;color:#cfe3c2;margin-bottom:8px;">Pressures — % of landscape</div>
-        <div style="display:flex;flex-direction:column;gap:7px;">
-          <div style="display:grid;grid-template-columns:1fr 42px;align-items:center;gap:10px;"><div><div style="font-size:11px;color:#eaf3e2;margin-bottom:3px;">Energy and mining</div><div style="height:6px;border-radius:3px;background:rgba(255,255,255,.14);"><div style="height:100%;border-radius:3px;background:var(--light-green);width:100%;"></div></div></div><div style="font-size:11px;text-align:right;color:#fff;font-weight:600;">16.8%</div></div>
-          <div style="display:grid;grid-template-columns:1fr 42px;align-items:center;gap:10px;"><div><div style="font-size:11px;color:#eaf3e2;margin-bottom:3px;">Forestry</div><div style="height:6px;border-radius:3px;background:rgba(255,255,255,.14);"><div style="height:100%;border-radius:3px;background:var(--light-green);width:82%;"></div></div></div><div style="font-size:11px;text-align:right;color:#fff;font-weight:600;">13.7%</div></div>
-          <div style="display:grid;grid-template-columns:1fr 42px;align-items:center;gap:10px;"><div><div style="font-size:11px;color:#eaf3e2;margin-bottom:3px;">Transport — lower intensity</div><div style="height:6px;border-radius:3px;background:rgba(255,255,255,.14);"><div style="height:100%;border-radius:3px;background:var(--light-green);width:43%;"></div></div></div><div style="font-size:11px;text-align:right;color:#fff;font-weight:600;">7.2%</div></div>
-          <div style="display:grid;grid-template-columns:1fr 42px;align-items:center;gap:10px;"><div><div style="font-size:11px;color:#eaf3e2;margin-bottom:3px;">Transport — higher intensity</div><div style="height:6px;border-radius:3px;background:rgba(255,255,255,.14);"><div style="height:100%;border-radius:3px;background:var(--light-green);width:24%;"></div></div></div><div style="font-size:11px;text-align:right;color:#fff;font-weight:600;">4.0%</div></div>
-          <div style="display:grid;grid-template-columns:1fr 42px;align-items:center;gap:10px;"><div><div style="font-size:11px;color:#eaf3e2;margin-bottom:3px;">Agriculture</div><div style="height:6px;border-radius:3px;background:rgba(255,255,255,.14);"><div style="height:100%;border-radius:3px;background:var(--light-green);width:7%;"></div></div></div><div style="font-size:11px;text-align:right;color:#fff;font-weight:600;">1.1%</div></div>
-          <div style="display:grid;grid-template-columns:1fr 42px;align-items:center;gap:10px;"><div><div style="font-size:11px;color:#eaf3e2;margin-bottom:3px;">Urban and built up</div><div style="height:6px;border-radius:3px;background:rgba(255,255,255,.14);"><div style="height:100%;border-radius:3px;background:var(--light-green);width:2%;"></div></div></div><div style="font-size:11px;text-align:right;color:#fff;font-weight:600;">0.2%</div></div>
-        </div>
-      </div>
+function pageFooter(D, pageLabel){
+  return `<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:10px;color:#9dc47f;padding-top:6px;border-top:1px solid rgba(255,255,255,.2);">
+    <span>${esc(LABELS.footerOrg)} &nbsp;·&nbsp; ${esc(LABELS.footerGenerated)} ${esc(D.generatedDate)}</span>
+    <span>${esc(pageLabel)}</span>
+  </div>`;
+}
+
+function renderPage1(D){
+  const left = `<div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:12px;font-weight:700;letter-spacing:.04em;color:#cfe3c2;">${esc(LABELS.overviewTitle)}</div>
+    <div style="display:flex;gap:14px;">
+      ${tile(LABELS.tileAreaProtected, fx(D.overview.protectedPct) + "%")}
+      ${tile(LABELS.tileWtw, fx(D.overview.wtwPct) + "%")}
     </div>
-
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <div style="font-size:12px;font-weight:700;letter-spacing:.04em;color:#cfe3c2;">Area habitats — % of landscape cover</div>
-      <div style="background:rgba(255,255,255,.09);border-radius:8px;padding:8px 13px;">
-        <div style="font-family:var(--serif);font-size:12.5px;font-weight:700;margin-bottom:6px;">Forest</div>
-        <div style="display:flex;gap:12px;">
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;line-height:1;">76.4%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">of landscape</div></div>
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--light-green);line-height:1;">1.7%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">protected</div></div>
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--yellow);line-height:1;">23.2%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">in WtW</div></div>
-        </div>
-      </div>
-      <div style="background:rgba(255,255,255,.09);border-radius:8px;padding:8px 13px;">
-        <div style="font-family:var(--serif);font-size:12.5px;font-weight:700;margin-bottom:6px;">Grassland</div>
-        <div style="display:flex;gap:12px;">
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;line-height:1;">0.1%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">of landscape</div></div>
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--light-green);line-height:1;">6.8%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">protected</div></div>
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--yellow);line-height:1;">33.1%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">in WtW</div></div>
-        </div>
-      </div>
-      <div style="background:rgba(255,255,255,.09);border-radius:8px;padding:8px 13px;">
-        <div style="font-family:var(--serif);font-size:12.5px;font-weight:700;margin-bottom:6px;">Wetland</div>
-        <div style="display:flex;gap:12px;">
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;line-height:1;">4.5%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">of landscape</div></div>
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--light-green);line-height:1;">1.6%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">protected</div></div>
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--yellow);line-height:1;">18.0%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">in WtW</div></div>
-        </div>
-      </div>
-      <div style="background:rgba(255,255,255,.09);border-radius:8px;padding:8px 13px;">
-        <div style="font-family:var(--serif);font-size:12.5px;font-weight:700;margin-bottom:6px;">Lakes</div>
-        <div style="display:flex;gap:12px;">
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;line-height:1;">1.0%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">of landscape</div></div>
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--light-green);line-height:1;">5.1%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">protected</div></div>
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--yellow);line-height:1;">40.0%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">in WtW</div></div>
-        </div>
-      </div>
-      <div style="font-size:12px;font-weight:700;letter-spacing:.04em;color:#cfe3c2;margin-top:4px;">Linear habitats — total in landscape</div>
-      <div style="background:rgba(255,255,255,.09);border-radius:8px;padding:8px 13px;">
-        <div style="font-family:var(--serif);font-size:12.5px;font-weight:700;margin-bottom:6px;">Rivers</div>
-        <div style="display:flex;gap:12px;">
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;line-height:1;">60,915 km</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">in landscape</div></div>
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--light-green);line-height:1;">2.3%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">protected</div></div>
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--yellow);line-height:1;">23.0%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">in WtW</div></div>
-        </div>
-      </div>
-      <div style="background:rgba(255,255,255,.09);border-radius:8px;padding:8px 13px;">
-        <div style="font-family:var(--serif);font-size:12.5px;font-weight:700;margin-bottom:6px;">Coastline</div>
-        <div style="display:flex;gap:12px;">
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;line-height:1;">60,915 km</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">in landscape</div></div>
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--light-green);line-height:1;">2.3%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">protected</div></div>
-          <div style="flex:1;"><div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--yellow);line-height:1;">23.0%</div><div style="font-size:9px;color:#cfe3c2;margin-top:4px;">in WtW</div></div>
-        </div>
-      </div>
+    <div style="display:flex;gap:14px;">
+      ${speciesCard(LABELS.speciesAllTitle, "#fff", D.species.total, LABELS.speciesTotalLabel, D.species.needProtection, LABELS.speciesNeedProtectionLabel)}
+      ${speciesCard(LABELS.speciesAtRiskTitle, "var(--yellow)", D.species.atRisk, LABELS.speciesAtRiskLabel, D.species.atRiskNeedProtection, LABELS.speciesNeedProtectionLabel)}
     </div>
-  </div>
+    ${intactnessBlock(D.intactness)}
+    ${pressuresBlock(D.pressures)}
+  </div>`;
 
-  <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:10px;color:#9dc47f;padding-top:6px;border-top:1px solid rgba(255,255,255,.2);">
-    <span>Nature Conservancy of Canada &nbsp;·&nbsp; Assessment generated September 11, 2026</span>
-    <span>Page 1/2</span>
-  </div>
-</div>
+  const right = habitatColumn(D);
 
-<div class="pg" style="background:var(--deep-green);color:#fff;padding:34px 44px;display:flex;flex-direction:column;gap:18px;box-sizing:border-box;">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-    <div>
-      <div class="eyebrow" style="color:#b7e08a;">Landscape resiliency assessment</div>
-      <h1 style="font-family:var(--serif);font-size:32px;font-weight:600;margin:6px 0 0;">Western Alberta Upland</h1>
-      <div style="margin-top:8px;font-size:12px;"><span style="color:#b7e08a;font-size:10px;letter-spacing:.1em;text-transform:uppercase;">Area&nbsp;</span><strong>1,000,000 ha</strong> (<span style="color:var(--yellow);font-weight:700;">1/100</span>)</div>
-      <div style="margin-top:6px;font-size:12px;"><span style="color:#b7e08a;font-size:10px;letter-spacing:.1em;text-transform:uppercase;">Ecozone&nbsp;</span><strong>Boreal Plain</strong></div>
-    </div>
-    <img src="https://dummyimage.com/172x46/ffffff/2D602E.png&text=NCC" style="width:172px;height:46px;object-fit:contain;">
-  </div>
-  <div style="border-top:2px solid rgba(255,255,255,.28);"></div>
+  document.getElementById('page1').innerHTML = `
+    <div style="padding:34px 44px;display:flex;flex-direction:column;gap:18px;box-sizing:border-box;height:100%;">
+      ${pageHeader(D)}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;flex:1;position:relative;">
+        <div style="position:absolute;top:0;bottom:0;left:50%;width:0;border-left:2px solid rgba(255,255,255,.28);"></div>
+        ${left}
+        ${right}
+      </div>
+      ${pageFooter(D, LABELS.pageLabel1)}
+    </div>`;
+}
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;flex:1;position:relative;">
-    <div style="position:absolute;top:0;bottom:0;left:50%;width:0;border-left:2px solid rgba(255,255,255,.28);"></div>
-    <div style="display:flex;flex-direction:column;gap:5px;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.04em;color:#cfe3c2;margin-bottom:2px;">Action recommendations</div>
-      <div style="background:rgba(255,255,255,.09);border-radius:6px;padding:6px 11px;">
-        <div style="font-family:var(--serif);font-size:11.5px;font-weight:700;margin-bottom:2px;">Area-based conservation – 30x30 goals</div>
-        <div style="font-size:9.5px;color:#cfe3c2;line-height:1.28;">Recommended because current protection is less than 30%</div>
-      </div>
-      <div style="background:rgba(255,255,255,.09);border-radius:6px;padding:6px 11px;">
-        <div style="font-family:var(--serif);font-size:11.5px;font-weight:700;margin-bottom:2px;">Area-based conservation – endemic SAR</div>
-        <div style="font-size:9.5px;color:#cfe3c2;line-height:1.28;">Recommended because protection goals for at least 1 SAR can only be met in this ecoregion</div>
-      </div>
-      <div style="background:rgba(255,255,255,.09);border-radius:6px;padding:6px 11px;">
-        <div style="font-family:var(--serif);font-size:11.5px;font-weight:700;margin-bottom:2px;">Area-based conservation – SAR</div>
-        <div style="font-size:9.5px;color:#cfe3c2;line-height:1.28;">Recommended because protection goals for at least 5 SAR will likely include this ecoregion</div>
-      </div>
-      <div style="background:rgba(255,255,255,.09);border-radius:6px;padding:6px 11px;">
-        <div style="font-family:var(--serif);font-size:11.5px;font-weight:700;margin-bottom:2px;">Area-based conservation – biodiversity urgency</div>
-        <div style="font-size:9.5px;color:#cfe3c2;line-height:1.28;">Recommended due to biodiversity urgency: more than 20% of the ecoregion is an optimal location for meeting Canada-wide biodiversity goals</div>
-      </div>
-      <div style="background:rgba(255,255,255,.09);border-radius:6px;padding:6px 11px;">
-        <div style="font-family:var(--serif);font-size:11.5px;font-weight:700;margin-bottom:2px;">Area-based conservation – biodiversity opportunities</div>
-        <div style="font-size:9.5px;color:#cfe3c2;line-height:1.28;">Recommended due to biodiversity opportunity: more than 1M ha in the ecoregion are optimal locations for meeting Canada-wide biodiversity goals</div>
-      </div>
-      <div style="background:rgba(255,255,255,.09);border-radius:6px;padding:6px 11px;">
-        <div style="font-family:var(--serif);font-size:11.5px;font-weight:700;margin-bottom:2px;">Site / Area stewardship</div>
-        <div style="font-size:9.5px;color:#cfe3c2;line-height:1.28;">Recommended because NCC is the management authority on projects and needs to manage or steward land to maintain or enhance landscape resiliency</div>
-      </div>
-      <div style="background:rgba(255,255,255,.09);border-radius:6px;padding:6px 11px;">
-        <div style="font-family:var(--serif);font-size:11.5px;font-weight:700;margin-bottom:2px;">Ecosystem &amp; Natural Process (Re)Creation – 30x30 goals</div>
-        <div style="font-size:9.5px;color:#cfe3c2;line-height:1.28;">Recommended because 30x30 goals cannot be met without restoring landscapes (existing protection plus intact land is &lt;30% of the ecoregion)</div>
-      </div>
-      <div style="background:rgba(255,255,255,.09);border-radius:6px;padding:6px 11px;">
-        <div style="font-family:var(--serif);font-size:11.5px;font-weight:700;margin-bottom:2px;">Ecosystem &amp; Natural Process (Re)Creation – opportunities</div>
-        <div style="font-size:9.5px;color:#cfe3c2;line-height:1.28;">Recommended because the ecoregion is highly modified and there are lots of opportunities for landscape restoration projects</div>
-      </div>
-      <div style="background:rgba(255,255,255,.09);border-radius:6px;padding:6px 11px;">
-        <div style="font-family:var(--serif);font-size:11.5px;font-weight:700;margin-bottom:2px;">Alliance &amp; Partnership Development – land sharing</div>
-        <div style="font-size:9.5px;color:#cfe3c2;line-height:1.28;">Recommended because NCC owns fee-simple land and should consider appropriate land sharing strategies</div>
-      </div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px;"></div>
-  </div>
+function actionCard(a){
+  return `<div style="background:rgba(255,255,255,.09);border-radius:6px;padding:6px 11px;">
+    <div style="font-family:var(--serif);font-size:11.5px;font-weight:700;margin-bottom:2px;">${esc(a.title)}</div>
+    <div style="font-size:9.5px;color:#cfe3c2;line-height:1.28;">${esc(a.description)}</div>
+  </div>`;
+}
 
-  <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:10px;color:#9dc47f;padding-top:6px;border-top:1px solid rgba(255,255,255,.2);">
-    <span>Nature Conservancy of Canada &nbsp;·&nbsp; Assessment generated September 11, 2026</span>
-    <span>Page 2/2</span>
-  </div>
-</div>
+function actionsColumn(D){
+  const actions = D.actions || [];
+  const body = actions.length
+    ? actions.map(actionCard).join('')
+    : `<div style="font-size:10.5px;color:#cfe3c2;">${esc(LABELS.actionsEmpty)}</div>`;
+  return `<div style="display:flex;flex-direction:column;gap:5px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.04em;color:#cfe3c2;margin-bottom:2px;">${esc(LABELS.actionsTitle)}</div>
+    ${body}
+  </div>`;
+}
 
-</div>
+function territoriesColumn(D){
+  // Highest % of landscape first (ties A–Z); copy so REPORT_DATA is not mutated.
+  const territories = [...(D.territories || [])].sort((a, b) => b.pctLandscape - a.pctLandscape || a.name.localeCompare(b.name));
+  // Two side-by-side tables (first half / second half of the list) so the max case (81 territories, LP West Coast) fits the column.
+  const half = Math.ceil(territories.length / 2);
+  // Heat cell: classified into 10 bins (0-10%, 10-20%, ... 90-100%), each one step of fill opacity (0.06-0.56).
+  const shade = (v, rgb) => `background:rgba(${rgb},${(0.06 + Math.min(9, Math.floor(v / 10)) * (0.5 / 9)).toFixed(2)})`;
+  const table = rows => `<table class="terr-t"><tr><th>${esc(LABELS.terrColTerritory)}</th><th>${esc(LABELS.terrColLandPct)}</th><th>${esc(LABELS.terrColTerrPct)}</th></tr>${rows.map(t => `<tr><td><a href="${esc(t.url)}">${esc(t.name)}</a></td><td class="n" style="${shade(t.pctLandscape,'130,204,46')}">${pct1n(t.pctLandscape)}</td><td class="n" style="${shade(t.pctTerritory,'255,196,29')}">${pct1n(t.pctTerritory)}</td></tr>`).join('')}</table>`;
+  const list = territories.length
+    ? `<div class="terr-wrap"><div>${table(territories.slice(0, half))}</div><div>${territories.length > 1 ? table(territories.slice(half)) : ''}</div></div>`
+    : `<div style="font-size:9.5px;color:#cfe3c2;">${esc(LABELS.territoriesEmpty)}</div>`;
+  const introLink = `<a href="https://native-land.ca/" style="color:#eaf3e2;text-decoration:underline;">${esc(LABELS.territoriesLinkText)}</a>`;
+  const intro = fmt(LABELS.territoriesIntroTemplate, { link: introLink });
+  // Worked example uses the first (highest % of landscape) row so it always matches a real line in the list below it.
+  const example = territories.length
+    ? `<div style="font-size:8px;font-style:italic;color:#9dc47f;line-height:1.2;margin-bottom:1px;">${esc(fmt(LABELS.territoriesExampleTemplate, { pctLandscape: pct1n(territories[0].pctLandscape), name: territories[0].name, pctTerritory: pct1n(territories[0].pctTerritory) }))}</div>`
+    : '';
+  return `<div style="display:flex;flex-direction:column;gap:3px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.04em;color:#cfe3c2;margin-bottom:1px;">${esc(LABELS.territoriesTitle)}</div>
+    <div style="font-size:9.5px;color:#cfe3c2;line-height:1.2;margin-bottom:1px;">${intro}</div>
+    ${example}
+    ${list}
+  </div>`;
+}
+
+function renderPage2(D){
+  document.getElementById('page2').innerHTML = `
+    <div style="padding:34px 44px;display:flex;flex-direction:column;gap:18px;box-sizing:border-box;height:100%;">
+      ${pageHeader(D)}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;flex:1;position:relative;">
+        <div style="position:absolute;top:0;bottom:0;left:50%;width:0;border-left:2px solid rgba(255,255,255,.28);"></div>
+        ${actionsColumn(D)}
+        ${territoriesColumn(D)}
+      </div>
+      ${pageFooter(D, LABELS.pageLabel2)}
+    </div>`;
+}
+
+renderPage1(REPORT_DATA);
+renderPage2(REPORT_DATA);
+</script>
 </body>
 </html>

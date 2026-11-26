@@ -48,3 +48,14 @@ species_metadata_path = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_
 
 [actions]
 actions_reference_path = "tables/ERAP Action recommendation reference.xlsx"
+
+[territories]
+# data_prep/"12 intersect_indigenous_territories.py"'s output -- not otherwise
+# read into this pipeline. Keyed by this run's own name_col (ECOREGION_NAME_EN).
+territories_path = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/indigenous_territories_x_ecoregions.csv"
+
+[report]
+template_path = "erap_template.html"
+logo_path = "NCC_Wordmark_E_Logo_KO.png"
+logo_path_fr = "NCC_Wordmark_F_Logo_KO.png"
+profiles_dir = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/output/profiles/ecoregions"
