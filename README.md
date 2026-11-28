@@ -1,52 +1,79 @@
 # erap-deer-code
 
-Builds the national ERAP (Ecoregion Rapid Assessment Profile) table: habitat cover/protection/WTW-overlap, pressures, protected/intactness, species range/protection-gap metrics, and action recommendations, one row per ecoregion (and, going forward, one row per Priority Landscape).
+Builds the national ERAP (Ecoregion Rapid Assessment Profile) table: habitat cover/protection/WTW-overlap, pressures, protected/intactness, species range/protection-gap metrics, and action recommendations -- one row per ecoregion, and one row per Priority Landscape, via two separate pipeline runs over the same code.
 
-Rebuilt from a chain of 19 loosely-coupled scripts with hardcoded absolute paths into a `setup.toml`-driven pipeline, matching the `conservation-profiles` pattern -- see `CHANGELOG.md` for the full list of structural and output-table changes this rebuild made.
+## Requirements
 
-## Data sources
-
-- **Ecoregions/ecozones**: [Canadian Terrestrial Ecological Framework (CTEF) v2.2](https://www.natureserve.org/canada/featured-projects/national-ecological-framework-canada), downloaded from [open.canada.ca](https://open.canada.ca/data/en/dataset/3ef8e8a9-8d05-4fea-a8bf-7f5023d2b6e1), current version as of September 2026. Replaces an earlier internal ecoregions shapefile whose French ecoregion names turned out to be corrupted at the source and unrecoverable.
-- **Priority Landscapes**: `NCC_landscapes_10072025_MarcEdits`, coastal boundaries realigned to the CanCoast coastline layer.
+- R, with packages installed automatically by `R/01_setup.R` on first run.
+- ArcGIS Pro's licensed Python environment (for `arcpy`-based vector intersections) -- path set in `arcgis_config.toml`.
+- The `data_prep/"8 prioritizr"` chain additionally needs a local clone of [`wtw-data-prep2`](https://github.com/NCC-CNC/wtw-data-prep2) and the `prioritizr` R package.
 
 ## Running the workflow
 
-1. **`data_prep/` scripts, in numbered order** (see below) — one-time GIS/data prep that builds the reference layers and inputs `setup.toml` points at. All write their output to `C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep` (external, not this repo) — see each script's own header for its exact prerequisites and gotchas. arcpy scripts (`.py`) need ArcGIS Pro's own Python environment, not a plain Python install: `& "C:\Program Files\ArcGIS\Pro\bin\Python\envs\arcgispro-py3\python.exe" <script path>`.
-2. **The pipeline itself**, once `setup_ecoregions.toml`/`setup_priority_landscapes.toml` point at real data-prep output:
+1. **`data_prep/` scripts, in numbered order** -- one-time GIS/data prep that builds the reference layers `setup.toml` points at. All write their output outside this repo. arcpy scripts (`.py`) need ArcGIS Pro's own Python environment: `& "<arcgis_config.toml's python_path>" <script path>`.
+2. **The pipeline**, once `setup_ecoregions.toml` / `setup_priority_landscapes.toml` point at real data-prep output:
    ```
-   Rscript __pipeline__.R setup_ecoregions.toml
-   Rscript __pipeline__.R setup_priority_landscapes.toml
+   Rscript __pipeline__.R   # toml_path is set near the top of the file -- edit it to switch landscape sets
    ```
-   Each run writes its own checkpoint CSVs (`processing_dir`) and final output (`output_dir`'s `{output_name}_attributes.csv` + `{output_name}.gdb/{output_name}`) -- the two runs never share output, only the reference data in `setup.toml`'s non-`[landscape]` sections.
-3. Every numbered step (`R/03_protected_intactness.R` .. `R/09_gather_and_write.R`) can be re-run on its own after a failure -- source `R/01_setup.R`/`R/02_load_landscapes.R` first to get `cfg`/`landscapes`, then just that step's file.
+   Each run writes its own checkpoint CSVs (`processing_dir`) and final output (`output_dir`'s `{output_name}_attributes.csv` + `{output_name}.gdb/{output_name}`).
+3. Any numbered step (`R/03_protected_intactness.R` .. `R/09_gather_and_write.R`) can be re-run on its own after a failure -- source `R/01_setup.R` then `R/02_load_landscapes.R` first to get `cfg`/`landscapes`, then just that step's file.
 
 ## `data_prep/`
 
-One-time GIS/data prep, run in this numbered order, before the pipeline:
+Run in this numbered order, before the pipeline:
 
-1. `prep_ecoregions.py` — builds the ecoregions reference layer from CTEF v2.2: dissolves to one row per ecoregion, joins ecozone names on, reprojects to Canada Albers, and clips to the terrestrial land base boundary (both the ecoregions and ecozone layers). Compressed-gdb gotcha: run `arcpy.management.UncompressFileGeodatabaseData(gdb_path)` on the CTEF source gdbs first if arcpy reports a feature class "does not exist or is not supported".
-2. `intersect_priority_landscapes_ecoregions.py` — attributes each Priority Landscape with the ecoregion(s)/ecozone(s) it overlaps (`/`-joined where a landscape spans more than one), filtering boundary slivers between the two independently-digitized layers using a validated geometric rule (`perim_per_area_km >= 3.0`) — re-validate this rule whenever either source layer changes meaningfully.
-3. `prep_cpcad_ncc_2025.py` — builds a true-vector CPCAD 2025 + NCC accomplishments dissolve (`cpcad_ncc_dslv_2025`), plus two NCC-only layers read by `R/08_actions.R` (`ncc_fs_ca_2025_dslv`, `ncc_fs_2025_dslv`).
-4. `prep_cpcad_ncc_2025_terrestrial.py` — clips the terrestrial land base and `cpcad_ncc_dslv_2025` together, for the species protected-area recalculation below.
-5. `extract_species_tiffs_from_sparse_matrices.R` — converts the national `.rds` sparse species matrices into per-species tifs, filtered to the 6 themes this pipeline uses.
-6. `filter_species_metadata.R` — builds a project-specific copy of the species metadata workbook, matching 1:1 against the tifs from step 5.
-7. `recalc_species_protected_km2.R` — recomputes species protected-range area from CPCAD (vector + terrestrial-clipped), writing new columns in place into step 6's workbook. Slow -- caches per-species-chunk results in `data_prep/cache/` (gitignored).
-8. *(prioritizr solve chain -- `8 prioritizr/`, its own pre-existing `1`-`4`/`1e` numbering, run separately)*
-9. `prep_wtw_erase_protected.py` — vectorizes the WTW no-Includes solution and erases `cpcad_ncc_dslv_2025` from it, producing the single `wtw_erased_protected` layer `setup.toml` points at (per `erap-deer-code#18`).
-10. `gather_habitat_data.py` — reprojects the seven habitat source datasets into one `habitat/` folder, meant to run on whichever server has access to the source files, then be copied back here: the six vector layers go into `habitat/habitat.gdb`, and the forest raster into its own standalone `habitat/Forest_AAFC_LUTS_2020_NFIS_2022_30m.tif` -- kept out of the gdb because `ProjectRaster` into a File GDB raster dataset doesn't reliably carry the source's NoData value through (confirmed: background cells silently became a huge, valid-looking pixel value once read back via GDAL's OpenFileGDB raster driver, inflating every forest area figure hundreds of times over -- a plain GeoTIFF doesn't have this problem).
-11. `gather_indigenous_territories.py` — downloads the full native-land.ca territories dataset and converts it to a local feature class.
-12. `intersect_indigenous_territories.py` — intersects territories against ecoregions and Priority Landscapes separately, writing two CSVs (`erap-deer-code#28`) -- not currently consumed by the main pipeline, a standalone data product.
+1. `prep_ecoregions.py` -- builds the ecoregions reference layer: dissolves to one row per ecoregion, joins ecozone names on, reprojects to Canada Albers, clips to the terrestrial land base.
+2. `intersect_priority_landscapes_ecoregions.py` -- attributes each Priority Landscape with the ecoregion(s)/ecozone(s) it overlaps.
+3. `prep_cpcad_ncc_2025.py` -- builds a true-vector CPCAD + NCC accomplishments dissolve, plus two NCC-only layers (fee-simple+CA, fee-simple-only) read by `R/08_actions.R`.
+4. `prep_cpcad_ncc_2025_terrestrial.py` -- clips the terrestrial land base and the CPCAD+NCC dissolve together, for the species protected-area recalculation below.
+5. `extract_species_tiffs_from_sparse_matrices.R` -- converts the national sparse species matrices into per-species tifs.
+6. `filter_species_metadata.R` -- builds a project-specific copy of the species metadata workbook, matching the tifs from step 5.
+7. `recalc_species_protected_km2.R` -- recomputes species protected-range area from CPCAD, writing new columns into step 6's workbook.
+8. *(prioritizr solve chain -- `8 prioritizr/`, its own numbering, run separately -- see below)*
+9. `prep_wtw_erase_protected.py` -- vectorizes the WTW no-Includes solution and erases the CPCAD+NCC layer from it, producing `Canada_wtw_2026`.
+10. `gather_habitat_data.py` -- reprojects the habitat source datasets into one local `habitat/` folder (vector layers into `habitat.gdb`, the forest raster as a standalone GeoTIFF).
+11. `gather_indigenous_territories.py` -- downloads the native-land.ca territories dataset and converts it to a local feature class.
+12. `intersect_indigenous_territories.py` -- intersects territories against ecoregions and Priority Landscapes, writing two standalone CSVs (not consumed by the main pipeline).
+13. `repair_wetland_geometry.py` / 14. `repair_peatlands_geometry.py` -- run only if the main pipeline's intersect step errors on invalid topology in `habitat_wetland`/`habitat_peatlands`; repairs the feature class in place.
 
-All generated GIS/data output lives in `C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep`, not in this repo.
+### `data_prep/8 prioritizr/`
 
-## Notes on the ported methodology
+The WTW opportunity-map solve, run ecozone by ecozone then merged:
 
-**`wtw_percent` is % of the whole landscape covered by the WTW opportunity layer, with protected areas already erased out of that layer first (`erap-deer-code#18`)** -- not the legacy "% of the unprotected remainder" formula, and not a raster zonal-stat against the un-erased solution + a separate grid-based "Includes" layer. `06_wtw.R` intersects `wtw_erased_protected` (`data_prep/"9 prep_wtw_erase_protected.py"`'s output -- the WTW no-Includes solution with `cpcad_ncc_dslv_2025` erased out, as a true vector operation) directly against each landscape:
+1. `1_initiate_project_ecozones.R` -- sets up one WTW project per ecozone.
+2. `2_aoi_to_1km_grid.R` -- builds the 1km planning-unit grid for each ecozone AOI.
+3. `3_natdata_to_aoi.R` -- clips national input data to each AOI.
+4. `4_prioritizr.R` -- runs the `prioritizr` solve per ecozone and merges results into the national `Canada_wtw_2026`/no-Includes rasters.
+5. `1e_prioritizr_ecoregion_intersects.R` -- intersects the solve rasters against ecoregions.
 
-```
-wtw_percent = wtw_area_km2 / landscape_km2 * 100
-```
+## `R/`
 
-The erase step is what makes this safe to pair additively with `protected_pcnt` as a single "resiliency goal" figure (the issue's framing) -- without it, small protected areas the original 1km-grid prioritizr run missed would still show up as "WTW opportunity", double-counting the same ground under both percentages. `04_habitat.R`'s per-habitat WTW overlap (`forest_wtw_km2`, `coastline_wtw_km`, etc.) uses this same erased layer, for the same reason -- there is only one WTW input anywhere in this pipeline now, not a separate raster solution for `06_wtw.R` and a separate un-erased vector for habitat overlap.
+1. `01_setup.R` -- installs required packages, reads `setup.toml`, points `reticulate` at the ArcGIS Pro Python environment.
+2. `02_load_landscapes.R` -- loads the active landscape set (terrestrial + marine versions) and assigns `landscape_id`.
+3. `03_protected_intactness.R` -- protected / intact / modified area and percent columns.
+4. `04_habitat.R` -- habitat cover, protected overlap, and WTW overlap per habitat type.
+5. `05_pressures.R` -- % of each landscape covered by each human-footprint pressure.
+6. `06_wtw.R` -- WTW opportunity area/percent per landscape.
+7. `07_species.R` -- species range/protection-gap metrics (own checkpoint CSVs, not joined into the main table).
+8. `08_actions.R` -- action-recommendation trigger flags, joined against `tables/ERAP Action recommendation reference.xlsx`.
+9. `09_gather_and_write.R` -- joins every step's checkpoint table, converts units, rounds, and writes the final CSV + spatial output.
+10. `10_build_profiles.R` -- renders the per-landscape PDF report cards.
 
-This superseded an earlier note (kept here for context on why it isn't the current rule): the legacy pipeline's "% of unprotected land" formula needed its "already protected" figure (`includes_km2`) to come from the same rasterized 1km-grid layer the WTW solve itself was built against (`protected_grid_path`), never from intersecting the real CPCAD vector polygons -- mixing the two would have made the numerator and denominator disagree about what "protected" means. That concern doesn't disappear under the new formula, it just moves: `#18` handles it by cleaning the vector protected-areas layer *out of the WTW solution itself* before computing `wtw_area_km2`, rather than by keeping a separate grid-consistent "already protected" denominator term. `includes_km2`/`protected_grid_path` no longer exist anywhere in this pipeline.
+Helpers (`fct_*`): `fct_read_feature.R`/`fct_read_raster.R` (format-agnostic vector/raster readers), `fct_intersect_vector_value.py`/`fct_intersect_raster_value.R` (bulk vector/raster intersection against all landscapes at once), `fct_build_species_tab.R` (species stack + metadata join), `fct_calculate_targets.R` (Rodrigues-style conservation targets), `fct_create_1km_grid.R` (AOI-to-grid, used by the prioritizr chain).
+
+## Config files
+
+- `setup_ecoregions.toml` / `setup_priority_landscapes.toml` -- all pipeline paths and parameters, one per landscape set.
+- `arcgis_config.toml` -- local path to the ArcGIS Pro Python environment.
+
+## Input data
+
+`setup.toml` only points at `data_prep/`'s own output, never at original raw/source datasets. Raw source paths are set near the top of each `data_prep/` script that needs one:
+
+- `prep_ecoregions.py` -- ecoregions/ecozones source dataset.
+- `intersect_priority_landscapes_ecoregions.py` -- Priority Landscapes source layer.
+- `prep_cpcad_ncc_2025.py` / `prep_cpcad_ncc_2025_terrestrial.py` -- CPCAD + NCC accomplishments source.
+- `extract_species_tiffs_from_sparse_matrices.R` -- national species sparse matrices.
+- `gather_habitat_data.py` -- habitat source datasets (forest, grassland, wetland, lakes, rivers, peatlands, coastline).
+- `gather_indigenous_territories.py` -- downloads directly from native-land.ca.
+- `8 prioritizr/` scripts -- national WTW input data, via the `wtw-data-prep2` repo.
