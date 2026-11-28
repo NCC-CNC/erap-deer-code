@@ -21,8 +21,8 @@ source("R/fct_intersect_raster_value.R")
 # the terrestrial polygon like every other non-coastline metric.
 #
 # Both the protected-area and WTW inputs are the single erased layers
-# (protected_vector_path, wtw_erased_protected) -- per erap-deer-code#18,
-# the same wtw_erased_protected layer used everywhere else in this
+# (protected_vector_path, canada_wtw_2026) -- per erap-deer-code#18,
+# the same Canada_wtw_2026 layer used everywhere else in this
 # pipeline, not a separate un-erased WTW vector.
 habitat <- function(cfg, landscapes) {
   print("04 habitat...")
@@ -32,7 +32,7 @@ habitat <- function(cfg, landscapes) {
   landscape_path        <- cfg$landscape$landscape_path
   landscape_path_marine <- cfg$landscape$landscape_path_marine
   protected_path <- cfg$protected_data$protected_vector_path
-  wtw_path       <- cfg$protected_data$wtw_erased_protected
+  wtw_path       <- cfg$protected_data$canada_wtw_2026
 
   out <- sf::st_drop_geometry(terrestrial_sf)[, "landscape_id", drop = FALSE]
   landscape_km2 <- setNames(as.numeric(sf::st_area(terrestrial_sf)) / 1e6, terrestrial_sf$landscape_id)

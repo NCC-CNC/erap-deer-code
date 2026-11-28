@@ -38,7 +38,7 @@ habitat_peatlands = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep
 
 [protected_data]
 protected_vector_path = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/protected_areas.gdb/cpcad_ncc_dslv_2025"
-wtw_erased_protected = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/wtw.gdb/wtw_erased_protected"
+canada_wtw_2026 = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/wtw.gdb/Canada_wtw_2026"
 ncc_fs_ca_path = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/protected_areas.gdb/ncc_fs_ca_2025_dslv"
 ncc_fs_path = "C:/Users/marc.edwards/Documents/PROJECTS/ERAPs_v2/data_prep/protected_areas.gdb/ncc_fs_2025_dslv"
 

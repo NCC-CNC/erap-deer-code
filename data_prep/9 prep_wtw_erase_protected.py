@@ -89,7 +89,7 @@ if not arcpy.Exists(gdb):
 polygon_raw   = os.path.join(gdb, "wtw_polygon_raw")
 polygon_ones  = os.path.join(gdb, "wtw_polygon_ones")
 dissolved     = os.path.join(gdb, "wtw_dissolved")
-out_fc        = os.path.join(gdb, "wtw_erased_protected")
+out_fc        = os.path.join(gdb, "Canada_wtw_2026")
 
 # wtw_noincludes_source carries an unnamed CRS (confirmed via arcpy.Describe:
 # PROJCS["unknown",...]) despite its actual parameters matching this
